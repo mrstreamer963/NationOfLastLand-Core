@@ -1,1 +1,3 @@
-pub mod pos;
+mod pos;
+
+pub use pos::Pos;

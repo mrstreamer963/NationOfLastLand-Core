@@ -1,4 +1,4 @@
-use crate::modules::components::pos::Pos;
+use crate::modules::components::Pos;
 
 mod modules;
 

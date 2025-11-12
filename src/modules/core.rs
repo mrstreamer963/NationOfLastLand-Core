@@ -1,6 +1,6 @@
-use crate::modules::components::pos::Pos;
-use crate::modules::entities::vehicle::Vehicle;
-use crate::modules::entities::waste::Waste;
+use crate::modules::components::Pos;
+use crate::modules::entities::Vehicle;
+use crate::modules::entities::Waste;
 use hecs::World;
 
 pub struct Core {
