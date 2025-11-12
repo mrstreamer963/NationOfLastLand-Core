@@ -22,4 +22,8 @@ impl Core {
         self.world.spawn((pos, Vehicle {}));
         Ok(())
     }
+
+    pub fn update(&mut self, _delta: f64) -> Result<(), String> {
+        Ok(())
+    }
 }

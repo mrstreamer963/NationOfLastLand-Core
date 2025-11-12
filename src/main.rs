@@ -9,5 +9,9 @@ fn main() {
 
     core.create_waste(Pos { x: 10.0, y: 10.0 }).unwrap();
 
+    for i in 0..100 {
+        core.update(15.0).unwrap();
+    }
+
     println!("Hello, world!");
 }
