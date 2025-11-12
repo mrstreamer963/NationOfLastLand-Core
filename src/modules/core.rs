@@ -1,16 +1,25 @@
-use crate::modules::manager_create::ManagerCreate;
+use crate::modules::components::pos::Pos;
+use crate::modules::entities::vehicle::Vehicle;
+use crate::modules::entities::waste::Waste;
+use hecs::World;
 
 pub struct Core {
-    manager_create: ManagerCreate,
+    world: World,
 }
 
 impl Core {
     pub fn new() -> Self {
-        let manager_create = ManagerCreate::new();
-        Core { manager_create }
+        let world = World::new();
+        Core { world }
     }
 
-    pub fn get_manager_create(&self) -> &ManagerCreate {
-        &self.manager_create
+    pub fn create_waste(&mut self, pos: Pos) -> Result<(), String> {
+        self.world.spawn((pos, Waste {}));
+        Ok(())
+    }
+
+    pub fn create_vehicle(&mut self, pos: Pos) -> Result<(), String> {
+        self.world.spawn((pos, Vehicle {}));
+        Ok(())
     }
 }
