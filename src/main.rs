@@ -12,7 +12,7 @@ fn main() {
     for _i in 0..100 {
         core.update(15.0).unwrap();
         let s = core.export_world();
-        println!("Export world: {:?}", s);
+        println!("Export world: {s}");
     }
 
     println!("Hello, world!");
