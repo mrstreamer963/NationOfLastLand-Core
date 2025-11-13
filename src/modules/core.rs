@@ -1,6 +1,7 @@
 use crate::modules::components::Pos;
 use crate::modules::entities::Vehicle;
 use crate::modules::entities::Waste;
+use crate::modules::exporter::export_to_json;
 use hecs::World;
 
 pub struct Core {
@@ -25,5 +26,9 @@ impl Core {
 
     pub fn update(&mut self, _delta: f64) -> Result<(), String> {
         Ok(())
+    }
+
+    pub fn export_world(&self) -> String {
+        export_to_json(&self.world)
     }
 }
