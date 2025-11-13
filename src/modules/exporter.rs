@@ -3,12 +3,13 @@ use crate::modules::entities::Vehicle;
 use crate::modules::entities::Waste;
 use hecs::World;
 use serde::Serialize;
+use serde_json::Value;
 use std::collections::HashMap;
 
 #[derive(Serialize)]
 struct ExportData {
-    wastes: Vec<HashMap<String, Pos>>,
-    vehicles: Vec<HashMap<String, Pos>>,
+    wastes: Vec<HashMap<String, Value>>,
+    vehicles: Vec<HashMap<String, Value>>,
 }
 
 pub fn export_to_json(world: &World) -> String {
@@ -17,12 +18,18 @@ pub fn export_to_json(world: &World) -> String {
 
     // Выборка всех waste
     for (_id, (pos, _waste)) in world.query::<(&Pos, &Waste)>().iter() {
-        wastes.push(HashMap::from([("pos".to_string(), *pos)]));
+        wastes.push(HashMap::from([
+            ("id".to_string(), Value::Number(_id.id().into())),
+            ("pos".to_string(), serde_json::to_value(*pos).unwrap()),
+        ]));
     }
 
     // Выборка всех vehicle
     for (_id, (pos, _vehicle)) in world.query::<(&Pos, &Vehicle)>().iter() {
-        vehicles.push(HashMap::from([("pos".to_string(), *pos)]));
+        vehicles.push(HashMap::from([
+            ("id".to_string(), Value::Number(_id.id().into())),
+            ("pos".to_string(), serde_json::to_value(*pos).unwrap()),
+        ]));
     }
 
     let data = ExportData { wastes, vehicles };
