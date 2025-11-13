@@ -1,5 +1,6 @@
 mod core;
 pub mod modules;
+mod state;
 
 pub use core::Core;
 pub use modules::components::Pos;

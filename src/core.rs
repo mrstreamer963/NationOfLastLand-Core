@@ -1,10 +1,12 @@
 use crate::modules::components::Pos;
 use crate::modules::entities::{Vehicle, Waste};
 use crate::modules::exporter::export_to_json;
+use crate::state::State;
 use hecs::World;
 
 pub struct Core {
     world: World,
+    s: State,
 }
 
 impl Default for Core {
@@ -16,7 +18,8 @@ impl Default for Core {
 impl Core {
     pub fn new() -> Self {
         let world = World::new();
-        Core { world }
+        let s = State::new();
+        Core { world, s }
     }
 
     pub fn create_waste(&mut self, pos: Pos) -> Result<(), String> {
