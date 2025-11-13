@@ -1,5 +1,4 @@
 pub mod components;
-pub mod core;
-mod entities;
-mod exporter;
+pub mod entities;
+pub mod exporter;
 mod systems;

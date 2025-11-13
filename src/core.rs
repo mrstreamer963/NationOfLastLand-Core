@@ -1,6 +1,5 @@
 use crate::modules::components::Pos;
-use crate::modules::entities::Vehicle;
-use crate::modules::entities::Waste;
+use crate::modules::entities::{Vehicle, Waste};
 use crate::modules::exporter::export_to_json;
 use hecs::World;
 

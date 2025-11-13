@@ -1,9 +1,7 @@
-use crate::modules::components::Pos;
-
-mod modules;
+use NationOfLastLand_Core::{Core, Pos};
 
 fn main() {
-    let mut core = modules::core::Core::new();
+    let mut core = Core::new();
 
     core.create_vehicle(Pos { x: 10.0, y: 10.0 }).unwrap();
     core.create_vehicle(Pos { x: 20.0, y: 20.0 }).unwrap();
