@@ -1,7 +1,7 @@
 use crate::modules::components::Pos;
 use crate::modules::entities::{Vehicle, Waste};
 use crate::modules::exporter::export_to_json;
-use crate::state::State;
+use crate::modules::state::State;
 use hecs::World;
 
 pub struct Core {

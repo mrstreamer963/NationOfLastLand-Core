@@ -1,7 +1,7 @@
 use crate::modules::components::Pos;
 use crate::modules::entities::Vehicle;
 use crate::modules::entities::Waste;
-use crate::state::State;
+use crate::modules::state::State;
 use hecs::World;
 use serde::Serialize;
 use serde_json::Value;
