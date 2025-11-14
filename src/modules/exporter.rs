@@ -1,4 +1,4 @@
-use crate::modules::components::Pos;
+use crate::modules::components::{Pos, Rot};
 use crate::modules::entities::Vehicle;
 use crate::modules::entities::Waste;
 use crate::modules::state::State;
@@ -27,13 +27,18 @@ pub fn export_to_json(world: &World, state: &State) -> String {
     }
 
     // Выборка всех vehicle
-    for (_id, (pos, _vehicle)) in world.query::<(&Pos, &Vehicle)>().iter() {
+    for (_id, (pos, rot, _vehicle)) in world.query::<(&Pos, &Rot, &Vehicle)>().iter() {
         vehicles.push(HashMap::from([
             ("id".to_string(), Value::Number(_id.id().into())),
             ("pos".to_string(), serde_json::to_value(*pos).unwrap()),
+            ("rot".to_string(), serde_json::to_value(*rot).unwrap()),
         ]));
     }
 
-    let data = ExportData { wastes, vehicles, state: state.clone() };
+    let data = ExportData {
+        wastes,
+        vehicles,
+        state: state.clone(),
+    };
     serde_json::to_string(&data).unwrap()
 }
