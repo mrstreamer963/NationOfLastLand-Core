@@ -1,0 +1,12 @@
+[package]
+name = "nation-of-last-land-core"
+version = "0.1.0"
+edition = "2024"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+hecs.workspace = true
+serde.workspace = true
+serde_json.workspace = true
