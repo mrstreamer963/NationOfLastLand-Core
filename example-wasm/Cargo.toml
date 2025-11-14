@@ -6,6 +6,13 @@ edition = "2024"
 [lib]
 crate-type = ["cdylib"]
 
+[profile.release]
+opt-level = "z"  # или "s" — минимальный размер
+strip = true     # удаляет отладочную информацию (требуется nightly)
+lto = true       # whole-program LTO
+codegen-units = 1
+panic = "abort"
+
 [dependencies]
 wasm-bindgen = "0.2"
 wasm-bindgen-futures = "0.4"
