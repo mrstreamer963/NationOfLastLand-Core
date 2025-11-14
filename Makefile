@@ -21,6 +21,18 @@ wasm:
 wasm-release:
 	cargo build --target wasm32-unknown-unknown --release
 
+# Сборка example-wasm проекта
+wasm-example:
+	cd example-wasm && wasm-pack build --target web --out-dir pkg
+
+# Сборка example-wasm проекта (release)
+wasm-example-release:
+	cd example-wasm && wasm-pack build --target web --out-dir pkg --release
+
+# Служба example-wasm (требует python для простого HTTP сервера)
+serve-wasm-example:
+	cd example-wasm && python3 -m http.server 8000
+
 # Очистка
 clean:
 	cargo clean

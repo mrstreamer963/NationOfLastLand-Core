@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Example WASM</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .container {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        input {
+            padding: 8px;
+            margin: 5px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+        }
+        #output {
+            margin-top: 20px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 3px;
+            min-height: 100px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Example WASM Module</h1>
+
+    <div class="container">
+        <h2>Greet Function</h2>
+        <input type="text" id="nameInput" placeholder="Enter your name" value="World">
+        <button onclick="greetUser()">Greet</button>
+    </div>
+
+    <div class="container">
+        <h2>Add Numbers</h2>
+        <input type="number" id="num1" placeholder="First number" value="5">
+        <input type="number" id="num2" placeholder="Second number" value="3">
+        <button onclick="addNumbers()">Add</button>
+    </div>
+
+    <div class="container">
+        <h2>Core Info</h2>
+        <button onclick="showCoreInfo()">Get Core Info</button>
+    </div>
+
+    <div class="container">
+        <h2>Async Example</h2>
+        <button onclick="runAsyncExample()">Run Async</button>
+    </div>
+
+    <div id="output">
+        <strong>Output:</strong><br>
+        <div id="result"></div>
+    </div>
+
+    <script type="module">
+        import init, { greet, add_numbers, get_core_info, async_example } from './pkg/example_wasm.js';
+
+        async function run() {
+            await init();
+            log('WASM module loaded successfully!');
+        }
+
+        window.greetUser = function() {
+            const name = document.getElementById('nameInput').value;
+            const result = greet(name);
+            log(`Greeting: ${result}`);
+        };
+
+        window.addNumbers = function() {
+            const a = parseInt(document.getElementById('num1').value);
+            const b = parseInt(document.getElementById('num2').value);
+            const result = add_numbers(a, b);
+            log(`Result: ${a} + ${b} = ${result}`);
+        };
+
+        window.showCoreInfo = function() {
+            const info = get_core_info();
+            log(`Core Info: ${info}`);
+        };
+
+        window.runAsyncExample = async function() {
+            try {
+                const result = await async_example();
+                log(`Async Result: ${result}`);
+            } catch (error) {
+                log(`Async Error: ${error}`);
+            }
+        };
+
+        function log(message) {
+            const resultDiv = document.getElementById('result');
+            const timestamp = new Date().toLocaleTimeString();
+            resultDiv.innerHTML += `[${timestamp}] ${message}<br>`;
+            console.log(message);
+        }
+
+        run();
+    </script>
+</body>
+</html>
