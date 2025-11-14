@@ -1,12 +1,12 @@
-[package]
-name = "nation-of-last-land-core"
-version = "0.1.0"
-edition = "2024"
+[workspace]
+resolver = "3"
+members = [
+    "core",
+    "interface-native",
+    "wasm-interface"
+]
 
-[lib]
-crate-type = ["cdylib", "rlib"]
-
-[dependencies]
+[workspace.dependencies]
 hecs = "0.10.5"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
