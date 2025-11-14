@@ -1,6 +1,6 @@
 # Makefile для сборки проекта NationOfLastLand-Core на Rust
 
-.PHONY: all build release clean run test check
+.PHONY: all build release clean run test check wasm wasm-release
 
 # По умолчанию сборка в режиме debug
 all: build
@@ -12,6 +12,14 @@ build:
 # Сборка в режиме release
 release:
 	cargo build --release
+
+# Сборка для WebAssembly (debug)
+wasm:
+	cargo build --target wasm32-unknown-unknown
+
+# Сборка для WebAssembly (release)
+wasm-release:
+	cargo build --target wasm32-unknown-unknown --release
 
 # Очистка
 clean:
