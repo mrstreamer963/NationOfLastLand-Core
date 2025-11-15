@@ -3,10 +3,11 @@
 <head>
     <meta charset="utf-8">
     <title>Example WASM</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pixi.js/8.0.3/pixi.min.js"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
-            max-width: 800px;
+            max-width: 1000px;
             margin: 0 auto;
             padding: 20px;
         }
@@ -34,6 +35,11 @@
             border: 1px solid #ccc;
             border-radius: 3px;
         }
+        #canvasContainer {
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            overflow: hidden;
+        }
         #output {
             margin-top: 20px;
             padding: 10px;
@@ -47,19 +53,6 @@
     <h1>Example WASM Module</h1>
 
     <div class="container">
-        <h2>Greet Function</h2>
-        <input type="text" id="nameInput" placeholder="Enter your name" value="World">
-        <button onclick="greetUser()">Greet</button>
-    </div>
-
-    <div class="container">
-        <h2>Add Numbers</h2>
-        <input type="number" id="num1" placeholder="First number" value="5">
-        <input type="number" id="num2" placeholder="Second number" value="3">
-        <button onclick="addNumbers()">Add</button>
-    </div>
-
-    <div class="container">
         <h2>Core Info</h2>
         <button onclick="showCoreInfo()">Get Core Info</button>
     </div>
@@ -69,31 +62,26 @@
         <button onclick="runAsyncExample()">Run Async</button>
     </div>
 
+    <div class="container">
+        <h2>Pixi.js Rendering</h2>
+        <button onclick="renderWorld()">Render World with Pixi.js</button>
+        <div id="canvasContainer"></div>
+    </div>
+
     <div id="output">
         <strong>Output:</strong><br>
         <div id="result"></div>
     </div>
 
     <script type="module">
-        import init, { greet, add_numbers, get_core_info, async_example } from './pkg/example_wasm.js';
+        import init, { get_core_info, async_example, get_world_data } from './pkg/example_wasm.js';
+
+        let pixiApp = null;
 
         async function run() {
             await init();
             log('WASM module loaded successfully!');
         }
-
-        window.greetUser = function() {
-            const name = document.getElementById('nameInput').value;
-            const result = greet(name);
-            log(`Greeting: ${result}`);
-        };
-
-        window.addNumbers = function() {
-            const a = parseInt(document.getElementById('num1').value);
-            const b = parseInt(document.getElementById('num2').value);
-            const result = add_numbers(a, b);
-            log(`Result: ${a} + ${b} = ${result}`);
-        };
 
         window.showCoreInfo = function() {
             const info = get_core_info();
@@ -107,6 +95,50 @@
             } catch (error) {
                 log(`Async Error: ${error}`);
             }
+        };
+
+        window.renderWorld = function() {
+            const container = document.getElementById('canvasContainer');
+            container.innerHTML = ''; // Clear previous canvas
+
+            // Create Pixi.js app
+            pixiApp = new PIXI.Application({
+                width: 800,
+                height: 600,
+                backgroundColor: 0x1099bb
+            });
+
+            container.appendChild(pixiApp.view);
+
+            // Get world data from WASM
+            const worldDataJson = get_world_data();
+            const worldData = JSON.parse(worldDataJson);
+            log(`Rendered world with ${worldData.wastes.length} wastes and ${worldData.vehicles.length} vehicles`);
+
+            // Scale factor for positions
+            const scale = 50;
+
+            // Draw wastes (red squares)
+            worldData.wastes.forEach((waste, index) => {
+                const graphics = new PIXI.Graphics();
+                graphics.beginFill(0xff0000);
+                graphics.drawRect(0, 0, 20, 20);
+                graphics.endFill();
+                graphics.x = waste.pos.x * scale;
+                graphics.y = waste.pos.y * scale;
+                pixiApp.stage.addChild(graphics);
+            });
+
+            // Draw vehicles (blue circles)
+            worldData.vehicles.forEach((vehicle, index) => {
+                const graphics = new PIXI.Graphics();
+                graphics.beginFill(0x0000ff);
+                graphics.drawCircle(0, 0, 15);
+                graphics.endFill();
+                graphics.x = vehicle.pos.x * scale;
+                graphics.y = vehicle.pos.y * scale;
+                pixiApp.stage.addChild(graphics);
+            });
         };
 
         function log(message) {

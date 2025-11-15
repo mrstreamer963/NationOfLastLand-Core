@@ -54,8 +54,6 @@ Then open `http://localhost:8000` in your browser.
 
 The WASM module exports several functions that can be called from JavaScript:
 
-- `greet(name: string)` - Returns a greeting message
-- `add_numbers(a: number, b: number)` - Adds two numbers
 - `get_core_info()` - Returns information about core integration
 - `async_example()` - Demonstrates async functionality
 
