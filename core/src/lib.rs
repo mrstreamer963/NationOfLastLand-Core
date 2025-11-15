@@ -1,4 +1,5 @@
 mod core;
-pub mod modules;
+mod random_generator;
 
+pub mod modules;
 pub use core::*;
