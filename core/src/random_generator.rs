@@ -2,7 +2,7 @@ use hecs::World;
 use rand::Rng;
 
 use crate::{
-    defines::MapSize,
+    defines::{MapSize, MaxMin},
     modules::{
         components::{Pos, ToxicPower},
         entities::Waste,
@@ -11,7 +11,12 @@ use crate::{
 
 pub struct RandomGenerator {
     size: MapSize,
-    maxToxicPower: f32,
+    toxicPower: MaxMin,
+}
+
+pub fn generate_between(range: &MaxMin) -> f32 {
+    let mut rng = rand::thread_rng();
+    rng.gen_range(range.min..=range.max)
 }
 
 fn generate_random_pos(map_size: &MapSize) -> Pos {
@@ -25,6 +30,7 @@ fn generate_random_pos(map_size: &MapSize) -> Pos {
 impl RandomGenerator {
     pub fn create_waste(&self, world: &mut World) {
         let pos = generate_random_pos(&self.size);
-        world.spawn((pos, ToxicPower { level: 5.0 }, Waste {}));
+        let level = 5.0_f32.min(self.toxicPower.max);
+        world.spawn((pos, ToxicPower { level }, Waste {}));
     }
 }
