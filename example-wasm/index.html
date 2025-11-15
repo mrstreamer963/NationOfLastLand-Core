@@ -110,7 +110,7 @@
                 backgroundColor: 0x1099bb
             });
 
-            container.appendChild(pixiApp.view);
+            container.appendChild(pixiApp.canvas);
 
             // Get world data from WASM
             const worldDataJson = get_world_data();
@@ -123,9 +123,7 @@
             // Draw wastes (red squares)
             worldData.wastes.forEach((waste, index) => {
                 const graphics = new PIXI.Graphics();
-                graphics.beginFill(0xff0000);
-                graphics.drawRect(0, 0, 20, 20);
-                graphics.endFill();
+                graphics.fill(0xff0000).drawRect(0, 0, 20, 20);
                 graphics.x = waste.pos.x * scale;
                 graphics.y = waste.pos.y * scale;
                 pixiApp.stage.addChild(graphics);
@@ -134,9 +132,7 @@
             // Draw vehicles (blue circles)
             worldData.vehicles.forEach((vehicle, index) => {
                 const graphics = new PIXI.Graphics();
-                graphics.beginFill(0x0000ff);
-                graphics.drawCircle(0, 0, 15);
-                graphics.endFill();
+                graphics.fill(0x0000ff).drawCircle(0, 0, 15);
                 graphics.x = vehicle.pos.x * scale;
                 graphics.y = vehicle.pos.y * scale;
                 pixiApp.stage.addChild(graphics);
