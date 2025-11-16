@@ -1,4 +1,5 @@
-use crate::modules::components::{IsWaitingTarget, Pos};
+use crate::defines::Point;
+use crate::modules::components::{IsMoving, IsWaitingTarget, Pos, Target};
 use crate::modules::entities::{Vehicle, Waste};
 use hecs::World;
 
@@ -20,8 +21,8 @@ fn find_nearest_waste_from_list(waste_positions: &[Pos], from: Pos) -> Option<Po
     nearest
 }
 
-/// System that finds nearest waste targets for waiting vehicles
-pub fn ai_vehicle_system(world: &World) -> Vec<(hecs::Entity, Option<Pos>)> {
+/// System that processes vehicles waiting for targets, assigns nearest waste, and changes their state
+pub fn ai_vehicle_system(world: &mut World) {
     // First, precompute all waste positions
     let mut waste_positions = Vec::new();
     for (_entity, (pos, _waste)) in world.query::<(&Pos, &Waste)>().iter() {
@@ -36,12 +37,21 @@ pub fn ai_vehicle_system(world: &World) -> Vec<(hecs::Entity, Option<Pos>)> {
         waiting_vehicles.push((entity, *pos));
     }
 
-    // Find targets for each waiting vehicle
-    let mut vehicle_targets = Vec::new();
+    // Find targets for each waiting vehicle and assign them
     for (entity, pos) in waiting_vehicles {
         let nearest_waste = find_nearest_waste_from_list(&waste_positions, pos);
-        vehicle_targets.push((entity, nearest_waste));
-    }
+        if let Some(waste_pos) = nearest_waste {
+            // Assign target
+            let target = Target {
+                value: Point { x: waste_pos.x, y: waste_pos.y },
+            };
+            world.insert_one(entity, target).unwrap();
 
-    vehicle_targets
+            // Remove waiting state
+            world.remove_one::<IsWaitingTarget>(entity).unwrap();
+
+            // Add moving state
+            world.insert_one(entity, IsMoving {}).unwrap();
+        }
+    }
 }

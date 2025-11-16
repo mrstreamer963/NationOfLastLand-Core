@@ -1,5 +1,5 @@
-use crate::defines::{MapSize, MinMax, Point};
-use crate::modules::components::{IsMoving, IsWaitingTarget, MaxSpeed, Pos, Rot, Target};
+use crate::defines::{MapSize, MinMax};
+use crate::modules::components::{IsWaitingTarget, MaxSpeed, Pos, Rot};
 use crate::modules::entities::Vehicle;
 use crate::modules::exporter::export_to_json;
 use crate::modules::state::State;
@@ -54,25 +54,8 @@ impl Core {
     }
 
     pub fn update(&mut self, delta: f64) -> Result<(), String> {
-        // Run AI system to find nearest waste targets for all vehicles
-        let vehicle_targets = ai_vehicle_system(&self.world);
-
-        // Use the vehicle targets to update vehicle behavior
-        for (entity, nearest_waste) in vehicle_targets {
-            if let Some(pos) = nearest_waste {
-                // Assign target
-                let target = Target {
-                    value: Point { x: pos.x, y: pos.y },
-                };
-                self.world.insert_one(entity, target).unwrap();
-
-                // Remove waiting state
-                self.world.remove_one::<IsWaitingTarget>(entity).unwrap();
-
-                // Add moving state
-                self.world.insert_one(entity, IsMoving {}).unwrap();
-            }
-        }
+        // Run AI system to process waiting vehicles and assign targets
+        ai_vehicle_system(&mut self.world);
 
         // Increment time
         self.s.time += delta;
