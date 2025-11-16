@@ -53,10 +53,14 @@ impl Core {
         Ok(())
     }
 
-    pub fn update(&mut self, _delta: f64) -> Result<(), String> {
+    pub fn update(&mut self, delta: f64) -> Result<(), String> {
         // Run AI system to find nearest waste targets for all vehicles
         let _vehicle_targets = ai_vehicle_system(&self.world);
         // TODO: Use the vehicle targets to update vehicle behavior
+
+        // Increment time
+        self.s.time += delta;
+
         Ok(())
     }
 
