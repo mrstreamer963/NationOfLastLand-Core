@@ -1,8 +1,7 @@
-use wasm_bindgen::prelude::*;
-use web_sys::console;
-use console_error_panic_hook;
 use nation_of_last_land_core::Core;
 use std::cell::RefCell;
+use wasm_bindgen::prelude::*;
+use web_sys::console;
 
 thread_local! {
     static CORE: RefCell<Core> = RefCell::new(Core::new());
@@ -36,16 +35,16 @@ pub async fn async_example() -> Result<String, JsValue> {
 #[wasm_bindgen]
 pub fn update_world(delta_ms: f64) {
     CORE.with(|core| {
-        core.borrow_mut().update(delta_ms / 1000.0).unwrap_or_else(|e| {
-            console::warn_1(&format!("Failed to update core: {}", e).into());
-        });
+        core.borrow_mut()
+            .update(delta_ms / 1000.0)
+            .unwrap_or_else(|e| {
+                console::warn_1(&format!("Failed to update core: {}", e).into());
+            });
     });
 }
 
 // Function to get world data for rendering
 #[wasm_bindgen]
 pub fn get_world_data() -> String {
-    CORE.with(|core| {
-        core.borrow().export_world()
-    })
+    CORE.with(|core| core.borrow().export_world())
 }

@@ -1,4 +1,4 @@
-use crate::modules::components::{MaxSpeed, Pos, Rot, ToxicPower};
+use crate::modules::components::{IsMoving, IsStopped, IsWaitingTarget, MaxSpeed, Pos, Rot, Target, ToxicPower, Velocity};
 use crate::modules::entities::Vehicle;
 use crate::modules::entities::Waste;
 use crate::modules::state::State;
@@ -29,12 +29,34 @@ pub fn export_to_json(world: &World, state: &State) -> String {
 
     // Выборка всех vehicle
     for (_id, (pos, rot, max_speed, _vehicle)) in world.query::<(&Pos, &Rot, &MaxSpeed, &Vehicle)>().iter() {
-        vehicles.push(HashMap::from([
+        let mut vehicle_data = HashMap::from([
             ("id".to_string(), Value::Number(_id.id().into())),
             ("pos".to_string(), serde_json::to_value(*pos).unwrap()),
             ("rot".to_string(), serde_json::to_value(*rot).unwrap()),
             ("max_speed".to_string(), serde_json::to_value(*max_speed).unwrap()),
-        ]));
+        ]);
+
+        // Add optional components
+        if let Ok(target) = world.get::<&Target>(_id) {
+            vehicle_data.insert("target".to_string(), serde_json::to_value(*target).unwrap());
+        }
+        if let Ok(velocity) = world.get::<&Velocity>(_id) {
+            vehicle_data.insert("velocity".to_string(), serde_json::to_value(*velocity).unwrap());
+        }
+
+        // Add state
+        let state = if world.get::<&IsWaitingTarget>(_id).is_ok() {
+            "waiting"
+        } else if world.get::<&IsMoving>(_id).is_ok() {
+            "moving"
+        } else if world.get::<&IsStopped>(_id).is_ok() {
+            "stopped"
+        } else {
+            "unknown"
+        };
+        vehicle_data.insert("state".to_string(), Value::String(state.to_string()));
+
+        vehicles.push(vehicle_data);
     }
 
     let data = ExportData {
