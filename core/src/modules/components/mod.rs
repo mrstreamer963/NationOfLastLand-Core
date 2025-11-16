@@ -1,3 +1,4 @@
+mod max_speed;
 mod pos;
 mod reputation;
 mod rot;
@@ -6,6 +7,7 @@ mod target;
 mod toxic_power;
 mod velocity;
 
+pub use max_speed::MaxSpeed;
 pub use pos::Pos;
 pub use reputation::Reputation;
 pub use rot::Rot;
