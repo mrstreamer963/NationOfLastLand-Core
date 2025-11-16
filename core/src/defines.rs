@@ -3,7 +3,7 @@ pub struct MapSize {
     pub height: i32,
 }
 
-pub struct MaxMin {
+pub struct MinMax {
     pub max: f32,
     pub min: f32,
 }

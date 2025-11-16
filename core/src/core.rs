@@ -1,4 +1,4 @@
-use crate::defines::{MapSize, MaxMin};
+use crate::defines::{MapSize, MinMax};
 use crate::modules::components::{Pos, Rot};
 use crate::modules::entities::Vehicle;
 use crate::modules::exporter::export_to_json;
@@ -24,7 +24,7 @@ impl Core {
         let world = World::new();
         let s = State::new();
         let r = RandomGenerator {
-            toxic_power: MaxMin { max: 1.0, min: 1.0 },
+            toxic_power: MinMax { max: 1.0, min: 1.0 },
             size: MapSize {
                 width: 10,
                 height: 10,
