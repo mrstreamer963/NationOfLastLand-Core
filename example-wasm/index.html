@@ -148,6 +148,11 @@
                 return;
             }
 
+            // Display time
+            if (worldData.state && worldData.state.time !== undefined) {
+                ctx.fillText(`Time: ${worldData.state.time.toFixed(2)}`, 10, 50);
+            }
+
             // Scale factor for positions
             const scale = 50;
 
