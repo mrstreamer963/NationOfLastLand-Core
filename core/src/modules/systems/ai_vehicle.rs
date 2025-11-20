@@ -21,8 +21,11 @@ fn find_nearest_waste_from_list(waste_positions: &[Pos], from: Pos) -> Option<Po
     nearest
 }
 
-/// System that processes vehicles waiting for targets, assigns nearest waste, and changes their state
-pub fn ai_vehicle_system(world: &mut World) {
+fn move_vehicles(world: &mut World) {
+
+}
+
+fn set_target_to_waiting_vehicles (world: &mut World) {
     // First, precompute all waste positions
     let mut waste_positions = Vec::new();
     for (_entity, (pos, _waste)) in world.query::<(&Pos, &Waste)>().iter() {
@@ -54,4 +57,11 @@ pub fn ai_vehicle_system(world: &mut World) {
             world.insert_one(entity, IsMoving {}).unwrap();
         }
     }
+}
+
+/// System that processes vehicles waiting for targets, assigns nearest waste, and changes their state
+pub fn ai_vehicle_system(world: &mut World) {
+    set_target_to_waiting_vehicles(world);
+
+    move_vehicles(world);
 }
