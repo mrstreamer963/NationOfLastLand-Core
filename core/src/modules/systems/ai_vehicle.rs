@@ -1,5 +1,5 @@
 use crate::defines::Point;
-use crate::modules::components::{IsMoving, IsWaitingTarget, Pos, Target};
+use crate::modules::components::{IsMoving, IsStopped, IsWaitingTarget, MaxSpeed, Pos, Target, Velocity};
 use crate::modules::entities::{Vehicle, Waste};
 use hecs::World;
 
@@ -22,7 +22,41 @@ fn find_nearest_waste_from_list(waste_positions: &[Pos], from: Pos) -> Option<Po
 }
 
 fn move_vehicles(world: &mut World) {
+    // Collect entities that have arrived
+    let mut arrived_entities = Vec::new();
 
+    // Query for vehicles that are moving and update their velocity
+    for (entity, (pos, target, velocity, max_speed, _is_moving)) in
+        world.query::<(&Pos, &Target, &mut Velocity, &MaxSpeed, &IsMoving)>().iter()
+    {
+        let dx = target.value.x - pos.x;
+        let dy = target.value.y - pos.y;
+        let distance_squared = dx * dx + dy * dy;
+
+        // Threshold to consider reached, e.g., 1.0 units
+        const THRESHOLD: f32 = 1.0;
+        if distance_squared < THRESHOLD * THRESHOLD {
+            // Arrived at target
+            arrived_entities.push(entity);
+            // Reset velocity to zero
+            velocity.x = 0.0;
+            velocity.y = 0.0;
+        } else {
+            // Compute direction
+            let distance = distance_squared.sqrt();
+            let dir_x = dx / distance;
+            let dir_y = dy / distance;
+            // Set velocity towards target
+            velocity.x = dir_x * max_speed.value;
+            velocity.y = dir_y * max_speed.value;
+        }
+    }
+
+    // Change state for arrived vehicles
+    for entity in arrived_entities {
+        world.remove_one::<IsMoving>(entity).unwrap();
+        world.insert_one(entity, IsStopped {}).unwrap();
+    }
 }
 
 fn set_target_to_waiting_vehicles (world: &mut World) {

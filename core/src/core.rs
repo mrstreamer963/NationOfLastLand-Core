@@ -1,5 +1,5 @@
 use crate::defines::{MapSize, MinMax};
-use crate::modules::components::{IsWaitingTarget, MaxSpeed, Pos, Rot};
+use crate::modules::components::{IsWaitingTarget, MaxSpeed, Pos, Rot, Velocity};
 use crate::modules::entities::Vehicle;
 use crate::modules::exporter::export_to_json;
 use crate::modules::state::State;
@@ -47,6 +47,7 @@ impl Core {
             pos,
             Rot { x: 0.0, y: 0.0 },
             MaxSpeed { value: 1.0 },
+            Velocity { x: 0.0, y: 0.0 },
             IsWaitingTarget {},
             Vehicle {},
         ));
