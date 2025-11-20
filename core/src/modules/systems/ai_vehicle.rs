@@ -25,9 +25,9 @@ fn move_vehicles(world: &mut World) {
     // Collect entities that have arrived
     let mut arrived_entities = Vec::new();
 
-    // Query for vehicles that are moving and update their velocity
+    // Query for vehicles that are moving and update their velocity and position
     for (entity, (pos, target, velocity, max_speed, _is_moving)) in
-        world.query::<(&Pos, &Target, &mut Velocity, &MaxSpeed, &IsMoving)>().iter()
+        world.query::<(&mut Pos, &Target, &mut Velocity, &MaxSpeed, &IsMoving)>().iter()
     {
         let dx = target.value.x - pos.x;
         let dy = target.value.y - pos.y;
@@ -38,17 +38,21 @@ fn move_vehicles(world: &mut World) {
         if distance_squared < THRESHOLD * THRESHOLD {
             // Arrived at target
             arrived_entities.push(entity);
-            // Reset velocity to zero
+            // Set position to target and reset velocity to zero
+            pos.x = target.value.x;
+            pos.y = target.value.y;
             velocity.x = 0.0;
             velocity.y = 0.0;
         } else {
-            // Compute direction
+            // Compute direction and set velocity
             let distance = distance_squared.sqrt();
             let dir_x = dx / distance;
             let dir_y = dy / distance;
-            // Set velocity towards target
             velocity.x = dir_x * max_speed.value;
             velocity.y = dir_y * max_speed.value;
+            // Move the vehicle
+            pos.x += velocity.x;
+            pos.y += velocity.y;
         }
     }
 
