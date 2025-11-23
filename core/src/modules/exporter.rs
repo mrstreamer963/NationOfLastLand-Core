@@ -1,5 +1,5 @@
 use crate::modules::components::{UnitType, Health, IsMoving, IsStopped, IsWaitingTarget, MaxSpeed, Pos, Rot, TargetPos, Velocity};
-use crate::modules::entities::Vehicle;
+
 use crate::modules::state::State;
 use hecs::World;
 use serde::{Deserialize, Serialize};
@@ -30,7 +30,10 @@ pub fn export_to_json(world: &World, state: &State) -> String {
     }
 
     // Выборка всех vehicle
-    for (_id, (pos, rot, max_speed, _vehicle)) in world.query::<(&Pos, &Rot, &MaxSpeed, &Vehicle)>().iter() {
+    for (_id, (pos, rot, max_speed, unit_type)) in world.query::<(&Pos, &Rot, &MaxSpeed, &UnitType)>().iter() {
+        if !matches!(unit_type, UnitType::Vehicle) {
+            continue;
+        }
         let mut vehicle_data = HashMap::from([
             ("id".to_string(), Value::Number(_id.id().into())),
             ("pos".to_string(), serde_json::to_value(*pos).unwrap()),

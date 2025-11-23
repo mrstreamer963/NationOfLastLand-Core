@@ -1,6 +1,6 @@
 use crate::defines::{MapSize, MinMax};
-use crate::modules::components::{Health, IsWaitingTarget,  MaxSpeed, Pos, Rot, Velocity};
-use crate::modules::entities::Vehicle;
+use crate::modules::components::{Health, IsWaitingTarget,  MaxSpeed, Pos, Rot, Velocity, UnitType};
+
 use crate::modules::exporter::export_to_json;
 use crate::modules::state::State;
 use crate::modules::systems::ai_vehicle::ai_vehicle_system;
@@ -50,7 +50,7 @@ impl Core {
             Velocity { x: 0.0, y: 0.0 },
             Health { value: 5.0},
             IsWaitingTarget {},
-            Vehicle {},
+            UnitType::Vehicle,
         ));
         Ok(())
     }

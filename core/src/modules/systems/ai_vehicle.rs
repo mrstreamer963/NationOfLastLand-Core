@@ -2,7 +2,7 @@ use crate::defines::Point;
 use crate::modules::components::{
     UnitType, IsMoving, IsStopped, IsWaitingTarget, MaxSpeed, Pos, TargetPos, Velocity
 };
-use crate::modules::entities::{Vehicle};
+
 use hecs::World;
 
 fn find_nearest_waste_from_list(waste_positions: &[Pos], from: Pos) -> Option<Pos> {
@@ -68,22 +68,26 @@ fn move_vehicles(world: &mut World) {
 
 fn set_target_to_waiting_vehicles(world: &mut World) {
     // First, precompute all waste positions
-    let mut waste_positions = Vec::new();
-    for (_entity, (pos, _alert_type)) in world.query::<(&Pos, &UnitType)>().iter() {
-        waste_positions.push(*pos);
+    let mut trash_positions = Vec::new();
+    for (_entity, (pos, unit_type)) in world.query::<(&Pos, &UnitType)>().iter() {
+        if matches!(unit_type, UnitType::Trash) {
+            trash_positions.push(*pos);
+        }
     }
 
     // Then, collect all vehicle entities that are waiting for targets
     let mut waiting_vehicles = Vec::new();
-    for (entity, (pos, _vehicle, _waiting)) in
-        world.query::<(&Pos, &Vehicle, &IsWaitingTarget)>().iter()
+    for (entity, (pos, unit_type, _waiting)) in
+        world.query::<(&Pos, &UnitType, &IsWaitingTarget)>().iter()
     {
-        waiting_vehicles.push((entity, *pos));
+        if matches!(unit_type, UnitType::Vehicle) {
+            waiting_vehicles.push((entity, *pos));
+        }
     }
 
     // Find targets for each waiting vehicle and assign them
     for (entity, pos) in waiting_vehicles {
-        let nearest_waste = find_nearest_waste_from_list(&waste_positions, pos);
+        let nearest_waste = find_nearest_waste_from_list(&trash_positions, pos);
         if let Some(waste_pos) = nearest_waste {
             // Assign target
             let target = TargetPos {
