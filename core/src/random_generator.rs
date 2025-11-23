@@ -4,8 +4,7 @@ use rand::Rng;
 use crate::{
     defines::{MapSize, MinMax},
     modules::{
-        components::{AlertType, Health, Pos, ToxicPower},
-        entities::Trash,
+        components::{AlertType, Health, Pos, ToxicPower}
     },
 };
 
