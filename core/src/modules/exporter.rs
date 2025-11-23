@@ -1,4 +1,4 @@
-use crate::modules::components::{AlertType, CleanPower, Health, IsMoving, IsStopped, IsWaitingTarget, MaxSpeed, Pos, Rot, TargetPos, ToxicPower, Velocity};
+use crate::modules::components::{AlertType, Health, IsMoving, IsStopped, IsWaitingTarget, MaxSpeed, Pos, Rot, TargetPos, ToxicPower, Velocity};
 use crate::modules::entities::Vehicle;
 use crate::modules::state::State;
 use hecs::World;
@@ -44,9 +44,6 @@ pub fn export_to_json(world: &World, state: &State) -> String {
         ]);
 
         // Add optional components
-        if let Ok(clean_power) = world.get::<&CleanPower>(_id) {
-            vehicle_data.insert("clean_power".to_string(), serde_json::to_value(*clean_power).unwrap());
-        }
         if let Ok(health) = world.get::<&Health>(_id) {
             vehicle_data.insert("health".to_string(), serde_json::to_value(*health).unwrap());
         }
