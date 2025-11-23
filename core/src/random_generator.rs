@@ -4,7 +4,7 @@ use rand::Rng;
 use crate::{
     defines::{MapSize, MinMax},
     modules::{
-        components::{AlertType, Health, Pos, ToxicPower}
+        components::{AlertType, Health, Pos}
     },
 };
 
@@ -37,8 +37,7 @@ fn generate_random_pos(map_size: &MapSize) -> Pos {
 impl RandomGenerator {
     pub fn create_waste(&self, world: &mut World) {
         let pos = generate_random_pos(&self.size);
-        let level = generate_between(&self.toxic_power);
         let health = generate_between(&self.toxic_health);
-        world.spawn((pos, ToxicPower { level }, Health { value: health }, AlertType::Waste));
+        world.spawn((pos, Health { value: health }, AlertType::Waste));
     }
 }

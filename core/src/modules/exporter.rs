@@ -1,4 +1,4 @@
-use crate::modules::components::{AlertType, Health, IsMoving, IsStopped, IsWaitingTarget, MaxSpeed, Pos, Rot, TargetPos, ToxicPower, Velocity};
+use crate::modules::components::{AlertType, Health, IsMoving, IsStopped, IsWaitingTarget, MaxSpeed, Pos, Rot, TargetPos, Velocity};
 use crate::modules::entities::Vehicle;
 use crate::modules::state::State;
 use hecs::World;
@@ -19,17 +19,12 @@ pub fn export_to_json(world: &World, state: &State) -> String {
 
     // Выборка всех alerts
     for (_id, (pos, health, alert_type )) in world.query::<(&Pos, &Health, &AlertType)>().iter() {
-        let mut alert_data = HashMap::from([
+        let alert_data = HashMap::from([
             ("id".to_string(), Value::Number(_id.id().into())),
             ("pos".to_string(), serde_json::to_value(*pos).unwrap()),
             ("health".to_string(), serde_json::to_value(health).unwrap()),
             ("alert_type".to_string(), serde_json::to_value(*alert_type).unwrap()),
         ]);
-
-        // Add optional toxic_power
-        if let Ok(toxic_power) = world.get::<&ToxicPower>(_id) {
-            alert_data.insert("toxic_power".to_string(), serde_json::to_value(*toxic_power).unwrap());
-        }
 
         alerts.push(alert_data);
     }
