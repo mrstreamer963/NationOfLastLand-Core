@@ -1,4 +1,4 @@
-use crate::modules::components::{UnitType, Health, IsMoving, IsStopped, IsWaitingTarget, MaxSpeed, Pos, Rot, TargetPos, Velocity};
+use crate::modules::components::{UnitType, Health, Pos, TargetPos, Velocity};
 
 use crate::modules::state::State;
 use hecs::World;
@@ -8,68 +8,47 @@ use std::collections::HashMap;
 
 #[derive(Serialize, Deserialize)]
 struct ExportData {
-    alerts: Vec<HashMap<String, Value>>,
-    vehicles: Vec<HashMap<String, Value>>,
+    units: Vec<HashMap<String, Value>>,
     state: State,
 }
 
 pub fn export_to_json(world: &World, state: &State) -> String {
-    let mut alerts = Vec::new();
-    let mut vehicles = Vec::new();
+    let mut units = Vec::new();
 
     // Выборка всех alerts
-    for (_id, (pos, health, alert_type )) in world.query::<(&Pos, &Health, &UnitType)>().iter() {
-        let alert_data = HashMap::from([
+    for (_id, (pos, unit_type )) in world.query::<(&Pos, &UnitType)>().iter() {
+        let mut alert_data = HashMap::from([
             ("id".to_string(), Value::Number(_id.id().into())),
             ("pos".to_string(), serde_json::to_value(*pos).unwrap()),
-            ("health".to_string(), serde_json::to_value(health).unwrap()),
-            ("alert_type".to_string(), serde_json::to_value(*alert_type).unwrap()),
+            ("unit_type".to_string(), serde_json::to_value(*unit_type).unwrap()),
         ]);
 
-        alerts.push(alert_data);
-    }
-
-    // Выборка всех vehicle
-    for (_id, (pos, rot, max_speed, unit_type)) in world.query::<(&Pos, &Rot, &MaxSpeed, &UnitType)>().iter() {
-        if !matches!(unit_type, UnitType::Vehicle) {
-            continue;
-        }
-        let mut vehicle_data = HashMap::from([
-            ("id".to_string(), Value::Number(_id.id().into())),
-            ("pos".to_string(), serde_json::to_value(*pos).unwrap()),
-            ("rot".to_string(), serde_json::to_value(*rot).unwrap()),
-            ("max_speed".to_string(), serde_json::to_value(*max_speed).unwrap()),
-        ]);
-
-        // Add optional components
         if let Ok(health) = world.get::<&Health>(_id) {
-            vehicle_data.insert("health".to_string(), serde_json::to_value(*health).unwrap());
+            alert_data.insert("velocity".to_string(), serde_json::to_value(*health).unwrap());
         }
-        if let Ok(target) = world.get::<&TargetPos>(_id) {
-            vehicle_data.insert("target".to_string(), serde_json::to_value(*target).unwrap());
-        }
+
         if let Ok(velocity) = world.get::<&Velocity>(_id) {
-            vehicle_data.insert("velocity".to_string(), serde_json::to_value(*velocity).unwrap());
+            alert_data.insert("velocity".to_string(), serde_json::to_value(*velocity).unwrap());
         }
 
-        // Add state
-        let state = if world.get::<&IsWaitingTarget>(_id).is_ok() {
-            "waiting"
-        } else if world.get::<&IsMoving>(_id).is_ok() {
-            "moving"
-        } else if world.get::<&IsStopped>(_id).is_ok() {
-            "stopped"
-        } else {
-            "unknown"
-        };
-        vehicle_data.insert("state".to_string(), Value::String(state.to_string()));
+        if let Ok(rot) = world.get::<&Velocity>(_id) {
+            alert_data.insert("rot".to_string(), serde_json::to_value(*rot).unwrap());
+        }
 
-        vehicles.push(vehicle_data);
+        if let Ok(max_speed) = world.get::<&Velocity>(_id) {
+            alert_data.insert("max_speed".to_string(), serde_json::to_value(*max_speed).unwrap());
+        }
+        
+        // Add optional components
+        if let Ok(target) = world.get::<&TargetPos>(_id) {
+            alert_data.insert("target".to_string(), serde_json::to_value(*target).unwrap());
+        }
+
+        units.push(alert_data);
     }
 
     let data = ExportData {
-        alerts,
-        vehicles,
+        units,
         state: state.clone(),
     };
     serde_json::to_string(&data).unwrap()
