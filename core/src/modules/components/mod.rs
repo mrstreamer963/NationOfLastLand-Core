@@ -8,6 +8,7 @@ mod toxic_power;
 mod velocity;
 mod health;
 mod clean_power;
+mod target_id;
 
 pub use max_speed::MaxSpeed;
 pub use pos::Pos;
@@ -19,4 +20,4 @@ pub use toxic_power::ToxicPower;
 pub use velocity::Velocity;
 pub use health::Health;
 pub use clean_power::CleanPower;
-
+pub use target_id::TargetId;
