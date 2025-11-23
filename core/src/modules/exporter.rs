@@ -1,13 +1,13 @@
-use crate::modules::components::{IsMoving, IsStopped, IsWaitingTarget, MaxSpeed, Pos, Rot, Target, ToxicPower, Velocity};
+use crate::modules::components::{Health, IsMoving, IsStopped, IsWaitingTarget, MaxSpeed, Pos, Rot, Target, ToxicPower, Velocity};
 use crate::modules::entities::Vehicle;
 use crate::modules::entities::Waste;
 use crate::modules::state::State;
 use hecs::World;
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::collections::HashMap;
 
-#[derive(Serialize)]
+#[derive(Serialize, Deserialize)]
 struct ExportData {
     wastes: Vec<HashMap<String, Value>>,
     vehicles: Vec<HashMap<String, Value>>,
@@ -19,10 +19,11 @@ pub fn export_to_json(world: &World, state: &State) -> String {
     let mut vehicles = Vec::new();
 
     // Выборка всех waste
-    for (_id, (pos, toxic_power, _waste)) in world.query::<(&Pos, &ToxicPower, &Waste)>().iter() {
+    for (_id, (pos, health, toxic_power, _waste)) in world.query::<(&Pos, &Health, &ToxicPower, &Waste)>().iter() {
         wastes.push(HashMap::from([
             ("id".to_string(), Value::Number(_id.id().into())),
             ("pos".to_string(), serde_json::to_value(*pos).unwrap()),
+            ("health".to_string(), serde_json::to_value(health).unwrap()),
             ("toxic_power".to_string(), serde_json::to_value(*toxic_power).unwrap()),
         ]));
     }
@@ -37,6 +38,9 @@ pub fn export_to_json(world: &World, state: &State) -> String {
         ]);
 
         // Add optional components
+        if let Ok(health) = world.get::<&Health>(_id) {
+            vehicle_data.insert("health".to_string(), serde_json::to_value(*health).unwrap());
+        }
         if let Ok(target) = world.get::<&Target>(_id) {
             vehicle_data.insert("target".to_string(), serde_json::to_value(*target).unwrap());
         }

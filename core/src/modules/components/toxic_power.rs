@@ -1,6 +1,6 @@
-use serde::Serialize;
+use serde::{Serialize, Deserialize};
 
-#[derive(Serialize, Clone, Copy, Default)]
+#[derive(Serialize, Deserialize, Clone, Copy, Default)]
 pub struct ToxicPower {
     pub level: f32,
 }
