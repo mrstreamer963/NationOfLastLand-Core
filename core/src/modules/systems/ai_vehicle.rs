@@ -1,5 +1,7 @@
 use crate::defines::Point;
-use crate::modules::components::{IsMoving, IsStopped, IsWaitingTarget, MaxSpeed, Pos, Target, Velocity};
+use crate::modules::components::{
+    IsMoving, IsStopped, IsWaitingTarget, MaxSpeed, Pos, Target, Velocity,
+};
 use crate::modules::entities::{Vehicle, Waste};
 use hecs::World;
 
@@ -26,15 +28,16 @@ fn move_vehicles(world: &mut World) {
     let mut arrived_entities = Vec::new();
 
     // Query for vehicles that are moving and update their velocity and position
-    for (entity, (pos, target, velocity, max_speed, _is_moving)) in
-        world.query::<(&mut Pos, &Target, &mut Velocity, &MaxSpeed, &IsMoving)>().iter()
+    for (entity, (pos, target, velocity, max_speed, _is_moving)) in world
+        .query::<(&mut Pos, &Target, &mut Velocity, &MaxSpeed, &IsMoving)>()
+        .iter()
     {
         let dx = target.value.x - pos.x;
         let dy = target.value.y - pos.y;
         let distance_squared = dx * dx + dy * dy;
 
         // Threshold to consider reached, e.g., 1.0 units
-        const THRESHOLD: f32 = 1.0;
+        const THRESHOLD: f32 = 0.1;
         if distance_squared < THRESHOLD * THRESHOLD {
             // Arrived at target
             arrived_entities.push(entity);
@@ -63,7 +66,7 @@ fn move_vehicles(world: &mut World) {
     }
 }
 
-fn set_target_to_waiting_vehicles (world: &mut World) {
+fn set_target_to_waiting_vehicles(world: &mut World) {
     // First, precompute all waste positions
     let mut waste_positions = Vec::new();
     for (_entity, (pos, _waste)) in world.query::<(&Pos, &Waste)>().iter() {
@@ -84,7 +87,10 @@ fn set_target_to_waiting_vehicles (world: &mut World) {
         if let Some(waste_pos) = nearest_waste {
             // Assign target
             let target = Target {
-                value: Point { x: waste_pos.x, y: waste_pos.y },
+                value: Point {
+                    x: waste_pos.x,
+                    y: waste_pos.y,
+                },
             };
             world.insert_one(entity, target).unwrap();
 

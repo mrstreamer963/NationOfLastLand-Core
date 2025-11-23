@@ -46,7 +46,7 @@ impl Core {
         self.world.spawn((
             pos,
             Rot { x: 0.0, y: 0.0 },
-            MaxSpeed { value: 1.0 },
+            MaxSpeed { value: 0.1 },
             Velocity { x: 0.0, y: 0.0 },
             IsWaitingTarget {},
             Vehicle {},
