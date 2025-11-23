@@ -6,6 +6,7 @@ mod states;
 mod target;
 mod toxic_power;
 mod velocity;
+mod health;
 
 pub use max_speed::MaxSpeed;
 pub use pos::Pos;
@@ -15,3 +16,4 @@ pub use states::{IsMoving, IsStopped, IsWaitingTarget};
 pub use target::Target;
 pub use toxic_power::ToxicPower;
 pub use velocity::Velocity;
+pub use health::Health;

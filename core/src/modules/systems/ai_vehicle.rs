@@ -103,9 +103,15 @@ fn set_target_to_waiting_vehicles(world: &mut World) {
     }
 }
 
+fn attack_vehicles(world: &mut World) {
+    
+}
+
 /// System that processes vehicles waiting for targets, assigns nearest waste, and changes their state
 pub fn ai_vehicle_system(world: &mut World) {
     set_target_to_waiting_vehicles(world);
 
     move_vehicles(world);
+
+    attack_vehicles(world);
 }

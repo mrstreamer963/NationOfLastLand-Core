@@ -12,6 +12,7 @@ use crate::{
 pub struct RandomGenerator {
     pub size: MapSize,
     pub toxic_power: MinMax,
+    pub toxic_health: MinMax
 }
 
 pub fn generate_between(range: &MinMax) -> f32 {

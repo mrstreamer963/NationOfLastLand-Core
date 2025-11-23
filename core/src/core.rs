@@ -25,6 +25,7 @@ impl Core {
         let s = State::new();
         let r = RandomGenerator {
             toxic_power: MinMax { max: 1.0, min: 1.0 },
+            toxic_health: MinMax { max: 5.0, min: 1.0 },
             size: MapSize {
                 width: 10,
                 height: 10,
