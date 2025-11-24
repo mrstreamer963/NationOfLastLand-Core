@@ -4,7 +4,8 @@ use rand::Rng;
 use crate::{
     defines::{MapSize, MinMax},
     modules::{
-        components::{UnitType, Health, Pos, Alert}
+        components::{UnitType, Health, Pos},
+        markers::{Alert}
     },
 };
 
