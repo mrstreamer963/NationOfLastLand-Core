@@ -2,6 +2,7 @@ use crate::defines::Point;
 use crate::modules::components::{
     UnitType, UnitState, MaxSpeed, Pos, TargetPos, Velocity
 };
+use crate::modules::markers::Vehicle;
 
 use hecs::World;
 
@@ -49,24 +50,31 @@ fn set_target_to_waiting_vehicles(world: &mut World) {
         }
     }
 
-    // Then, collect all vehicle entities that are waiting for targets
-    // let mut waiting_entities = Vec::new();
-    for (_entity, (pos, unit_type, unit_state)) in
-        world.query_mut::<(&Pos, &UnitType, &mut UnitState)>()
+    // Then, collect all vehicle entities that are waiting for targets and their nearest waste
+    let mut waiting_entities: Vec<(hecs::Entity, TargetPos)> = Vec::new();
+    
+    for (entity, (pos, _vehicle, unit_state)) in
+        world.query_mut::<(&Pos, &Vehicle, &mut UnitState)>()
     {
-        if *unit_type == UnitType::Vehicle && *unit_state == UnitState::IsWaitingTarget {
+        if *unit_state == UnitState::IsWaitingTarget {
             let nearest_waste = pos.find_nearest_position(&trash_positions);
             if let Some(waste_pos) = nearest_waste {
                 // Assign target
-                let _target = TargetPos {
+                let target = TargetPos {
                     value: Point {
                         x: waste_pos.x,
                         y: waste_pos.y,
                     },
                 };
+                waiting_entities.push((entity, target));
                 *unit_state = UnitState::IsMoving;
             }
         }
+    }
+
+    // Now add TargetPos components to the entities
+    for (entity, target) in waiting_entities {
+        world.insert_one(entity, target).unwrap();
     }
 }
 
