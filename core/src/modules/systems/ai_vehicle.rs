@@ -58,10 +58,6 @@ fn move_vehicles(world: &mut World) {
     }
 }
 
-// fn process_waiting (mut world: &World, pos: &Pos, unit_state: &mut UnitState) {
-//     *unit_state = UnitState::IsMoving;
-// }
-
 fn set_target_to_waiting_vehicles(world: &mut World) {
     // First, precompute all waste positions
     let mut trash_positions = Vec::new();
@@ -77,7 +73,6 @@ fn set_target_to_waiting_vehicles(world: &mut World) {
         world.query_mut::<(&Pos, &UnitType, &mut UnitState)>()
     {
         if *unit_type == UnitType::Vehicle && *unit_state == UnitState::IsWaitingTarget {
-            
             let nearest_waste = find_nearest_position_from_list(&trash_positions, *pos);
             if let Some(waste_pos) = nearest_waste {
                 // Assign target
@@ -87,36 +82,10 @@ fn set_target_to_waiting_vehicles(world: &mut World) {
                         y: waste_pos.y,
                     },
                 };
-                    *unit_state = UnitState::IsMoving;
+                *unit_state = UnitState::IsMoving;
             }
         }
     }
-
-    // Find targets for each waiting vehicle and assign them
-    // for entity in waiting_entities {
-    //     // Get the pos for the nearest waste
-        // if let Ok(pos) = world.get::<&Pos>(entity) {
-        //     let nearest_waste = find_nearest_position_from_list(&trash_positions, *pos);
-        //     if let Some(_waste_pos) = nearest_waste {
-                // Assign target
-                // let target = TargetPos {
-                //     value: Point {
-                //         x: waste_pos.x,
-                //         y: waste_pos.y,
-                //     },
-                // };
-
-                // if let Ok(mut state) = world.get_mut::<&UnitState>(entity) {
-                    // *state = UnitState::IsMoving;
-                // }
-            // }
-
-    //             // Remove waiting state
-    //         // world.remove_one::<UnitState>(entity).unwrap();
-    //         // Add moving state
-    //         // world.insert_one(entity, UnitState::IsMoving).unwrap();
-            // }
-        // }
 }
 
 
