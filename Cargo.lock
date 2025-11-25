@@ -81,6 +81,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "hecs-macros"
+version = "0.10.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "052fc25b12dc326082605cd2098eb76050a72fa0c0e9ea7faaa3f58b565fc970"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
+]
+
+[[package]]
 name = "interface-native"
 version = "0.1.0"
 dependencies = [
@@ -128,6 +139,7 @@ version = "0.1.0"
 dependencies = [
  "getrandom",
  "hecs",
+ "hecs-macros",
  "rand",
  "serde",
  "serde_json",

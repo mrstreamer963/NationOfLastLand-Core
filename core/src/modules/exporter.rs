@@ -23,54 +23,68 @@ impl ComponentValue {
 
 type ComponentGetter = Box<dyn Fn(&World, hecs::Entity) -> Option<ComponentValue>>;
 
+#[cfg(feature = "row-serialize")]
+type UnitsType = Vec<Vec<Value>>;
+#[cfg(not(feature = "row-serialize"))]
+type UnitsType = Vec<HashMap<String, Value>>;
+
 #[derive(Serialize, Deserialize)]
 struct ExportData {
-    units: Vec<HashMap<String, Value>>,
+    units: UnitsType,
     state: State,
 }
 
 pub fn export_to_json(world: &World, state: &State) -> String {
-    let mut units = Vec::new();
+    let mut units: UnitsType = Vec::new();
 
-    let component_getters: Vec<ComponentGetter> = vec![
-        Box::new(|world, id| world.get::<&Health>(id).ok().map(|c| ComponentValue::new("health", &*c))),
-        Box::new(|world, id| world.get::<&Velocity>(id).ok().map(|c| ComponentValue::new("velocity", &*c))),
-        Box::new(|world, id| world.get::<&Rot>(id).ok().map(|c| ComponentValue::new("rot", &*c))),
-        Box::new(|world, id| world.get::<&MaxSpeed>(id).ok().map(|c| ComponentValue::new("max_speed", &*c))),
-        Box::new(|world, id| world.get::<&TargetPos>(id).ok().map(|c| ComponentValue::new("target", &*c))),
-        Box::new(|world, id| world.get::<&Reputation>(id).ok().map(|c| ComponentValue::new("reputation", &*c))),
-        Box::new(|world, id| world.get::<&UnitState>(id).ok().map(|c| ComponentValue::new("unit_state", &*c))),
-        Box::new(|world, id| world.get::<&TargetId>(id).ok().map(|c| ComponentValue::new("target_id", &*c))),
-        Box::new(|world, id| world.get::<&DamageType>(id).ok().map(|c| ComponentValue::new("damage_type", &*c))),
-        Box::new(|world, id| {
-            world.get::<&Alert>(id).ok().map(|_| ComponentValue {
-                name: "alert".to_string(),
-                value: Value::Bool(true),
-            })
-        }),
-        Box::new(|world, id| {
-            world.get::<&Vehicle>(id).ok().map(|_| ComponentValue {
-                name: "vehicle".to_string(),
-                value: Value::Bool(true),
-            })
-        }),
+    let component_descriptions: Vec<(&str, Box<dyn Fn(&World, hecs::Entity) -> Option<Value>>)> = vec![
+        ("health", Box::new(|world, id| world.get::<&Health>(id).ok().map(|c| serde_json::to_value(*c).unwrap()))),
+        ("velocity", Box::new(|world, id| world.get::<&Velocity>(id).ok().map(|c| serde_json::to_value(*c).unwrap()))),
+        ("rot", Box::new(|world, id| world.get::<&Rot>(id).ok().map(|c| serde_json::to_value(*c).unwrap()))),
+        ("max_speed", Box::new(|world, id| world.get::<&MaxSpeed>(id).ok().map(|c| serde_json::to_value(*c).unwrap()))),
+        ("target", Box::new(|world, id| world.get::<&TargetPos>(id).ok().map(|c| serde_json::to_value(*c).unwrap()))),
+        ("reputation", Box::new(|world, id| world.get::<&Reputation>(id).ok().map(|c| serde_json::to_value(*c).unwrap()))),
+        ("unit_state", Box::new(|world, id| world.get::<&UnitState>(id).ok().map(|c| serde_json::to_value(*c).unwrap()))),
+        ("target_id", Box::new(|world, id| world.get::<&TargetId>(id).ok().map(|c| serde_json::to_value(*c).unwrap()))),
+        ("damage_type", Box::new(|world, id| world.get::<&DamageType>(id).ok().map(|c| serde_json::to_value(*c).unwrap()))),
+        ("alert", Box::new(|world, id| world.get::<&Alert>(id).ok().map(|_| Value::Bool(true)))),
+        ("vehicle", Box::new(|world, id| world.get::<&Vehicle>(id).ok().map(|_| Value::Bool(true)))),
     ];
 
-    // Выборка всех alerts
-    for (_id, (pos, alert_type )) in world.query::<(&Pos, &EntityType)>().iter() {
-        let mut alert_data = HashMap::from([
-            ("id".to_string(), Value::Number(_id.id().into())),
-            ("pos".to_string(), serde_json::to_value(*pos).unwrap()),
-            ("unit_type".to_string(), serde_json::to_value(*alert_type).unwrap()),
-        ]);
+    // Выборка всех units с Pos и EntityType
+    for (_id, (pos, entity_type)) in world.query::<(&Pos, &EntityType)>().iter() {
+        let id_val = Value::Number(_id.id().into());
+        let pos_val = serde_json::to_value(*pos).unwrap();
+        let unit_type_val = serde_json::to_value(*entity_type).unwrap();
 
-        for getter in &component_getters {
-            if let Some(cv) = getter(world, _id) {
-                alert_data.insert(cv.name, cv.value);
+        #[cfg(feature = "row-serialize")]
+        {
+            let mut row = vec![id_val, pos_val, unit_type_val];
+            for (name, getter) in &component_descriptions {
+                if let Some(val) = getter(world, _id) {
+                    row.push(val);
+                } else if *name == "alert" || *name == "vehicle" {
+                    row.push(Value::Bool(false));
+                } else {
+                    row.push(Value::Null);
+                }
             }
+            units.push(row);
         }
 
-        units.push(alert_data);
+        #[cfg(not(feature = "row-serialize"))]
+        {
+            let mut map = HashMap::new();
+            map.insert("id".to_string(), id_val);
+            map.insert("pos".to_string(), pos_val);
+            map.insert("unit_type".to_string(), unit_type_val);
+            for (name, getter) in &component_descriptions {
+                if let Some(val) = getter(world, _id) {
+                    map.insert(name.to_string(), val);
+                }
+            }
+            units.push(map);
+        }
     }
 
     let data = ExportData {
