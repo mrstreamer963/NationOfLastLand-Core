@@ -61,8 +61,12 @@ impl SerializeContext for Context {
         try_serialize::<UnitState, _, _>(&entity, &ComponentId::UnitState, &mut map)?;
         try_serialize::<TargetId, _, _>(&entity, &ComponentId::TargetId, &mut map)?;
         try_serialize::<DamageType, _, _>(&entity, &ComponentId::DamageType, &mut map)?;
-        map.serialize_entry(&ComponentId::Alert, &entity.has::<Alert>())?;
-        map.serialize_entry(&ComponentId::Vehicle, &entity.has::<Vehicle>())?;
+        if entity.has::<Alert>() {
+            map.serialize_entry(&ComponentId::Alert, &true)?;
+        }
+        if entity.has::<Vehicle>() {
+            map.serialize_entry(&ComponentId::Vehicle, &true)?;
+        }
         map.end()
     }
 }
