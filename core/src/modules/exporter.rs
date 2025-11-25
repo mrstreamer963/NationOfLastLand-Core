@@ -1,4 +1,4 @@
-use crate::modules::components::{AlertType, Health, Pos, TargetPos, Velocity};
+use crate::modules::components::{EntityType, Health, Pos, TargetPos, Velocity};
 
 use crate::modules::state::State;
 use hecs::World;
@@ -16,16 +16,16 @@ pub fn export_to_json(world: &World, state: &State) -> String {
     let mut units = Vec::new();
 
     // Выборка всех alerts
-    for (_id, (pos, unit_type )) in world.query::<(&Pos, &AlertType)>().iter() {
-        let alert_data = HashMap::from([
+    for (_id, (pos, alert_type )) in world.query::<(&Pos, &EntityType)>().iter() {
+        let mut alert_data = HashMap::from([
             ("id".to_string(), Value::Number(_id.id().into())),
             ("pos".to_string(), serde_json::to_value(*pos).unwrap()),
-            ("unit_type".to_string(), serde_json::to_value(*unit_type).unwrap()),
+            ("unit_type".to_string(), serde_json::to_value(*alert_type).unwrap()),
         ]);
 
-        // if let Ok(health) = world.get::<&Health>(_id) {
-        //     alert_data.insert("velocity".to_string(), serde_json::to_value(*health).unwrap());
-        // }
+        if let Ok(health) = world.get::<&Health>(_id) {
+            alert_data.insert("health".to_string(), serde_json::to_value(*health).unwrap());
+        }
 
         // if let Ok(velocity) = world.get::<&Velocity>(_id) {
         //     alert_data.insert("velocity".to_string(), serde_json::to_value(*velocity).unwrap());

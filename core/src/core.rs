@@ -1,5 +1,5 @@
 use crate::defines::{MapSize, MinMax};
-use crate::modules::components::{Health, UnitState, MaxSpeed, Pos, Rot, Velocity};
+use crate::modules::components::{EntityType, Health, MaxSpeed, Pos, Rot, UnitState, Velocity};
 use crate::modules::markers::{Vehicle};
 
 use crate::modules::exporter::export_to_json;
@@ -51,6 +51,7 @@ impl Core {
             Velocity { x: 0.0, y: 0.0 },
             Health { value: 5.0},
             UnitState::IsWaitingTarget,
+            EntityType::Vehicle,
             Vehicle {},
         ));
         Ok(())
