@@ -5,28 +5,8 @@ use crate::modules::state::State;
 use hecs::World;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
-use std::collections::HashMap;
 
-struct ComponentValue {
-    name: String,
-    value: Value,
-}
-
-impl ComponentValue {
-    fn new<T: Serialize>(name: &str, component: &T) -> Self {
-        Self {
-            name: name.to_string(),
-            value: serde_json::to_value(component).unwrap(),
-        }
-    }
-}
-
-type ComponentGetter = Box<dyn Fn(&World, hecs::Entity) -> Option<ComponentValue>>;
-
-#[cfg(feature = "row-serialize")]
 type UnitsType = Vec<Vec<Value>>;
-#[cfg(not(feature = "row-serialize"))]
-type UnitsType = Vec<HashMap<String, Value>>;
 
 #[derive(Serialize, Deserialize)]
 struct ExportData {
@@ -57,34 +37,17 @@ pub fn export_to_json(world: &World, state: &State) -> String {
         let pos_val = serde_json::to_value(*pos).unwrap();
         let unit_type_val = serde_json::to_value(*entity_type).unwrap();
 
-        #[cfg(feature = "row-serialize")]
-        {
-            let mut row = vec![id_val, pos_val, unit_type_val];
-            for (name, getter) in &component_descriptions {
-                if let Some(val) = getter(world, _id) {
-                    row.push(val);
-                } else if *name == "alert" || *name == "vehicle" {
-                    row.push(Value::Bool(false));
-                } else {
-                    row.push(Value::Null);
-                }
+        let mut row = vec![id_val, pos_val, unit_type_val];
+        for (name, getter) in &component_descriptions {
+            if let Some(val) = getter(world, _id) {
+                row.push(val);
+            } else if *name == "alert" || *name == "vehicle" {
+                row.push(Value::Bool(false));
+            } else {
+                row.push(Value::Null);
             }
-            units.push(row);
         }
-
-        #[cfg(not(feature = "row-serialize"))]
-        {
-            let mut map = HashMap::new();
-            map.insert("id".to_string(), id_val);
-            map.insert("pos".to_string(), pos_val);
-            map.insert("unit_type".to_string(), unit_type_val);
-            for (name, getter) in &component_descriptions {
-                if let Some(val) = getter(world, _id) {
-                    map.insert(name.to_string(), val);
-                }
-            }
-            units.push(map);
-        }
+        units.push(row);
     }
 
     let data = ExportData {
