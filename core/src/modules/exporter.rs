@@ -8,7 +8,6 @@ use serde::{Serialize, ser::SerializeMap};
 macro_rules! define_serialize_components {
     (
         components: $( $comp:ty ),* $(,)* ;
-        custom: $( ($ccomp:ty, $ckey:literal) ),* $(,)* ;
         markers: $( $mark:ty ),* $(,)* ;
     ) => {
         fn serialize_components<'a, S>(entity: EntityRef<'a>, mut map: S) -> Result<S::Ok, S::Error>
@@ -17,9 +16,6 @@ macro_rules! define_serialize_components {
         {
             $(
                 try_serialize::<$comp, _, _>(&entity, stringify!($comp), &mut map)?;
-            )*
-            $(
-                try_serialize::<$ccomp, _, _>(&entity, $ckey, &mut map)?;
             )*
             $(
                 if entity.has::<$mark>() {
@@ -32,8 +28,7 @@ macro_rules! define_serialize_components {
 }
 
 define_serialize_components! {
-    components: Pos, EntityType, Health, Velocity, Rot, MaxSpeed, Reputation, UnitState, TargetId, DamageType;
-    custom: (TargetPos, "Target");
+    components: Pos, EntityType, Health, Velocity, Rot, MaxSpeed, TargetPos, Reputation, UnitState, TargetId, DamageType;
     markers: Alert, Vehicle;
 }
 
