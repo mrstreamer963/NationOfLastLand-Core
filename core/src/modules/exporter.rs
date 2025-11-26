@@ -5,6 +5,38 @@ use crate::modules::state::State;
 use hecs::{serialize::row::*, World, EntityRef};
 use serde::{Serialize, ser::SerializeMap};
 
+macro_rules! define_serialize_components {
+    (
+        components: $( $comp:ty ),* $(,)* ;
+        custom: $( ($ccomp:ty, $ckey:literal) ),* $(,)* ;
+        markers: $( $mark:ty ),* $(,)* ;
+    ) => {
+        fn serialize_components<'a, S>(entity: EntityRef<'a>, mut map: S) -> Result<S::Ok, S::Error>
+        where
+            S: SerializeMap,
+        {
+            $(
+                try_serialize::<$comp, _, _>(&entity, stringify!($comp), &mut map)?;
+            )*
+            $(
+                try_serialize::<$ccomp, _, _>(&entity, $ckey, &mut map)?;
+            )*
+            $(
+                if entity.has::<$mark>() {
+                    map.serialize_entry(stringify!($mark), &true)?;
+                }
+            )*
+            map.end()
+        }
+    };
+}
+
+define_serialize_components! {
+    components: Pos, EntityType, Health, Velocity, Rot, MaxSpeed, Reputation, UnitState, TargetId, DamageType;
+    custom: (TargetPos, "Target");
+    markers: Alert, Vehicle;
+}
+
 struct ExportData {
     units: Vec<serde_json::Value>,
     state: State,
@@ -22,54 +54,18 @@ impl Serialize for ExportData {
     }
 }
 
-#[derive(Serialize)]
-enum ComponentId {
-    Pos,
-    EntityType,
-    Health,
-    Velocity,
-    Rot,
-    MaxSpeed,
-    Target,
-    Reputation,
-    UnitState,
-    TargetId,
-    DamageType,
-    Alert,
-    Vehicle,
-}
-
 struct Context;
 
 impl SerializeContext for Context {
     fn serialize_entity<S>(
         &mut self,
         entity: EntityRef<'_>,
-        mut map: S,
+        map: S,
     ) -> Result<S::Ok, S::Error>
     where
         S: SerializeMap,
     {
-        try_serialize::<Pos, _, _>(&entity, &ComponentId::Pos, &mut map)?;
-        try_serialize::<EntityType, _, _>(&entity, &ComponentId::EntityType, &mut map)?;
-        try_serialize::<Health, _, _>(&entity, &ComponentId::Health, &mut map)?;
-        try_serialize::<Velocity, _, _>(&entity, &ComponentId::Velocity, &mut map)?;
-        try_serialize::<Rot, _, _>(&entity, &ComponentId::Rot, &mut map)?;
-        try_serialize::<MaxSpeed, _, _>(&entity, &ComponentId::MaxSpeed, &mut map)?;
-        try_serialize::<TargetPos, _, _>(&entity, &ComponentId::Target, &mut map)?;
-        try_serialize::<Reputation, _, _>(&entity, &ComponentId::Reputation, &mut map)?;
-        try_serialize::<UnitState, _, _>(&entity, &ComponentId::UnitState, &mut map)?;
-        try_serialize::<TargetId, _, _>(&entity, &ComponentId::TargetId, &mut map)?;
-        try_serialize::<DamageType, _, _>(&entity, &ComponentId::DamageType, &mut map)?;
-
-        if entity.has::<Alert>() {
-            map.serialize_entry(&ComponentId::Alert, &true)?;
-        }
-        if entity.has::<Vehicle>() {
-            map.serialize_entry(&ComponentId::Vehicle, &true)?;
-        }
-
-        map.end()
+        serialize_components(entity, map)
     }
 }
 
