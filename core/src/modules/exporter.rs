@@ -7,29 +7,44 @@ use serde::{Serialize, ser::SerializeMap};
 
 macro_rules! define_serialize_components {
     (
-        components: $( $comp:ty ),* $(,)* ;
-        markers: $( $mark:ty ),* $(,)* ;
+        $( $comp:ty ),* $(,)*
     ) => {
-        fn serialize_components<'a, S>(entity: EntityRef<'a>, mut map: S) -> Result<S::Ok, S::Error>
+        fn serialize_components<'a, S>(entity: EntityRef<'a>, map: &mut S) -> Result<(), S::Error>
         where
             S: SerializeMap,
         {
             $(
-                try_serialize::<$comp, _, _>(&entity, stringify!($comp), &mut map)?;
+                try_serialize::<$comp, _, _>(&entity, stringify!($comp), map)?;
             )*
+            Ok(())
+        }
+    };
+}
+
+macro_rules! define_serialize_markers {
+    (
+        $( $mark:ty ),* $(,)*
+    ) => {
+        fn serialize_markers<'a, S>(entity: EntityRef<'a>, map: &mut S) -> Result<(), S::Error>
+        where
+            S: SerializeMap,
+        {
             $(
                 if entity.has::<$mark>() {
                     map.serialize_entry(stringify!($mark), &true)?;
                 }
             )*
-            map.end()
+            Ok(())
         }
     };
 }
 
 define_serialize_components! {
-    components: Pos, Force, EntityType, Health, Velocity, Rot, MaxSpeed, TargetPos, Reputation, UnitState, TargetId, DamageType;
-    markers: Alert, Vehicle;
+    Pos, Force, EntityType, Health, Velocity, Rot, MaxSpeed, TargetPos, Reputation, UnitState, TargetId, DamageType
+}
+
+define_serialize_markers! {
+    Alert, Vehicle
 }
 
 struct ExportData {
@@ -60,7 +75,10 @@ impl SerializeContext for Context {
     where
         S: SerializeMap,
     {
-        serialize_components(entity, map)
+        let mut map = map;
+        serialize_components(entity, &mut map)?;
+        serialize_markers(entity, &mut map)?;
+        map.end()
     }
 }
 
