@@ -38,6 +38,6 @@ impl RandomGenerator {
     pub fn create_trash(&self, world: &mut World) {
         let pos = generate_random_pos(&self.size);
         let health = generate_between(&self.toxic_health);
-        world.spawn((pos, Health { value: health }, EntityType::Trash, Alert {}));
+        world.spawn((pos, Health(health), EntityType::Trash, Alert {}));
     }
 }

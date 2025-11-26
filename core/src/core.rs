@@ -49,7 +49,7 @@ impl Core {
             Rot { x: 0.0, y: 0.0 },
             MaxSpeed { value: 0.1 },
             Velocity { x: 0.0, y: 0.0 },
-            Health { value: 5.0},
+            Health(5.0),
             UnitState::IsWaitingTarget,
             EntityType::Vehicle,
             Vehicle {},

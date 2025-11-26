@@ -1,6 +1,4 @@
 use serde::Serialize;
 
 #[derive(Serialize, Clone, Copy)]
-pub struct Health {
-    pub value: f32
-}
+pub struct Health(pub f32);
