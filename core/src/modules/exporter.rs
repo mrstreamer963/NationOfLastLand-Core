@@ -28,7 +28,7 @@ macro_rules! define_serialize_components {
 }
 
 define_serialize_components! {
-    components: Pos, EntityType, Health, Velocity, Rot, MaxSpeed, TargetPos, Reputation, UnitState, TargetId, DamageType;
+    components: Pos, Force, EntityType, Health, Velocity, Rot, MaxSpeed, TargetPos, Reputation, UnitState, TargetId, DamageType;
     markers: Alert, Vehicle;
 }
 
