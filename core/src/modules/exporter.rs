@@ -88,7 +88,7 @@ pub fn export_to_json(world: &World, state: &State) -> String {
     for (id, (_pos, _entity_type)) in world.query::<(&Pos, &EntityType)>().iter() {
         let entity = world.entity(id).unwrap();
         let unit_val = serde_json::to_value(UnitExport {
-            id: id.id(),
+            // id: id.id(),
             entity,
         }).unwrap();
         units.push(unit_val);
@@ -102,7 +102,7 @@ pub fn export_to_json(world: &World, state: &State) -> String {
 }
 
 struct UnitExport<'a> {
-    id: u32,
+    // id: u32,
     entity: EntityRef<'a>,
 }
 
@@ -111,8 +111,8 @@ impl Serialize for UnitExport<'_> {
     where
         S: serde::Serializer,
     {
-        let mut map = serializer.serialize_map(None)?;
-        map.serialize_entry("id", &(self.id as u64))?;
+        let map = serializer.serialize_map(None)?;
+        // map.serialize_entry("id", &(self.id as u64))?;
         let mut context = Context;
         context.serialize_entity(self.entity.clone(), map)
     }
