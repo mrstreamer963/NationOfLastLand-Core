@@ -36,6 +36,6 @@ impl RandomGenerator {
     pub fn get_bundle_trash(&self, map_size: &MapSize) -> (Pos, Health, EntityType, Alert) {
         let pos = generate_random_pos(map_size);
         let health = generate_between(&self.toxic_health);
-        (pos, Health { current: health, max: self.toxic_health.max }, EntityType::Trash, Alert {})
+        (pos, Health { current: health, max: health }, EntityType::Trash, Alert {})
     }
 }
