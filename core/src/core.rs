@@ -44,7 +44,8 @@ impl Core {
 
     pub fn spawn_entity(&mut self, bundle: impl hecs::Bundle + Send + Sync + 'static) -> hecs::Entity {
         let guid = Guid::new();
-        let entity = self.world.spawn((guid, bundle));
+        let entity = self.world.spawn(bundle);
+        self.world.insert_one(entity, guid).unwrap();
         self.ws.guid_to_entity.insert(guid, entity);
         entity
     }
