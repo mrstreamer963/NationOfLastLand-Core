@@ -5,14 +5,12 @@ use crate::modules::markers::{Vehicle, WaitingTarget};
 use crate::modules::exporter::export_to_json;
 use crate::modules::setup;
 use crate::modules::state::State;
-use crate::modules::world_state::WorldState;
 use crate::modules::systems::ai_vehicle::ai_vehicle_system;
 use crate::random_generator::RandomGenerator;
 use hecs::World;
 
 pub struct Core {
     world: World,
-    ws: WorldState,
     r: RandomGenerator,
     s: State,
     setup: setup::Setup,
@@ -33,9 +31,7 @@ impl Core {
             toxic_health: MinMax { max: 5.0, min: 1.0 },
         };
 
-        let ws = WorldState::default();
-
-        let mut c = Core { world, ws, s, r, setup };
+        let mut c = Core { world, s, r, setup };
 
         c.init_world();
         c
@@ -45,7 +41,6 @@ impl Core {
         let guid = Guid::new();
         let entity = self.world.spawn(bundle);
         self.world.insert_one(entity, guid).unwrap();
-        self.ws.guid_to_entity.insert(guid, entity);
         entity
     }
 
