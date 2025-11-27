@@ -85,7 +85,7 @@ impl SerializeContext for Context {
 pub fn export_to_json(world: &World, state: &State) -> String {
     let mut units = Vec::new();
 
-    for (_id, (_pos, _entity_type)) in world.query::<(&Pos, &EntityType)>().iter() {
+    for (_id, _entity_type) in world.query::<&EntityType>().iter() {
         let entity = world.entity(_id).unwrap();
         let unit_val = serde_json::to_value(UnitExport {
             entity,
