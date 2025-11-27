@@ -2,7 +2,7 @@ use crate::modules::components::Pos;
 use crate::modules::components::{
     EntityType, MaxSpeed, TargetId, Velocity, Guid, Target
 };
-use crate::modules::markers::{Vehicle, IsMoving, WaitingTarget, Stopped};
+use crate::modules::markers::{Vehicle, IsMoving, IsWaitingTarget, Stopped};
 use crate::modules::setup::Spatial;
 use hecs::World;
 
@@ -62,7 +62,7 @@ fn set_target_to_waiting_vehicles(world: &mut World) {
     let mut waiting_entities: Vec<(hecs::Entity, TargetId, Target)> = Vec::new();
 
     for (entity, (pos, _vehicle, _waiting)) in
-        world.query::<(&Pos, &Vehicle, &WaitingTarget)>()
+        world.query::<(&Pos, &Vehicle, &IsWaitingTarget)>()
         .iter()
     {
         // Find nearest trash by Entity and Guid
@@ -92,7 +92,7 @@ fn set_target_to_waiting_vehicles(world: &mut World) {
         world.insert_one(entity, target_id).unwrap();
         world.insert_one(entity, target).unwrap();
         world.insert_one(entity, IsMoving {}).unwrap();
-        world.remove_one::<WaitingTarget>(entity).unwrap();
+        world.remove_one::<IsWaitingTarget>(entity).unwrap();
     }
 }
 

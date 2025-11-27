@@ -1,6 +1,6 @@
 use crate::defines::MinMax;
 use crate::modules::components::{EntityType, Force, Guid, Health, MaxSpeed, Pos, Rot, Velocity};
-use crate::modules::markers::{Vehicle, WaitingTarget};
+use crate::modules::markers::{Vehicle, IsWaitingTarget};
 
 use crate::modules::exporter::export_to_json;
 use crate::modules::setup;
@@ -58,7 +58,7 @@ impl Core {
             Velocity { x: 0.0, y: 0.0 },
             Health { current: 5.0, max: 5.0 },
             Force(100.0),
-            WaitingTarget {},
+            IsWaitingTarget {},
             EntityType::Vehicle,
             Vehicle {},
         ));
