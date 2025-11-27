@@ -4,48 +4,46 @@ use crate::modules::components::{
 };
 use crate::modules::markers::Vehicle;
 use crate::modules::world_state::WorldState;
-use std::collections::HashMap;
 
 use hecs::World;
 
 fn move_vehicles(world: &mut World, ws: &WorldState) {
-    // Precompute Guid to Pos map
-    let mut guid_to_pos = HashMap::new();
-    for (_e, (g, p)) in world.query::<(&Guid, &Pos)>().iter() {
-        guid_to_pos.insert(*g, *p);
-    }
-
     // Query for vehicles that are moving and update their velocity and position
     for (_entity, (pos, target_id, velocity, max_speed, unit_state)) in world
         .query_mut::<(&mut Pos, &TargetId, &mut Velocity, &MaxSpeed, &mut UnitState)>()
     {
         if *unit_state == UnitState::IsMoving {
-            // Find target position by Guid
-            if let Some(target_pos) = guid_to_pos.get(&target_id.0).copied() {
-                let dx = target_pos.x - pos.x;
-                let dy = target_pos.y - pos.y;
-                let distance_squared = dx * dx + dy * dy;
+            // Find target position by Guid through entity
+            if let Some(target_entity) = ws.guid_to_entity.get(&target_id.0) {
+                if let Ok(mut query) = world.query_one::<&Pos>(*target_entity) {
+                    if let Some(target_pos) = query.get() {
+                        let target_pos = *target_pos;
+                        let dx = target_pos.x - pos.x;
+                        let dy = target_pos.y - pos.y;
+                        let distance_squared = dx * dx + dy * dy;
 
-                // Threshold to consider reached, e.g., 1.0 units
-                const THRESHOLD: f32 = 0.1;
-                if distance_squared < THRESHOLD * THRESHOLD {
-                    // Arrived at target
-                    // Set position to target and reset velocity to zero
-                    pos.x = target_pos.x;
-                    pos.y = target_pos.y;
-                    velocity.x = 0.0;
-                    velocity.y = 0.0;
-                    *unit_state = UnitState::IsStopped;
-                } else {
-                    // Compute direction and set velocity
-                    let distance = distance_squared.sqrt();
-                    let dir_x = dx / distance;
-                    let dir_y = dy / distance;
-                    velocity.x = dir_x * max_speed.value;
-                    velocity.y = dir_y * max_speed.value;
-                    // Move the vehicle
-                    pos.x += velocity.x;
-                    pos.y += velocity.y;
+                        // Threshold to consider reached, e.g., 1.0 units
+                        const THRESHOLD: f32 = 0.1;
+                        if distance_squared < THRESHOLD * THRESHOLD {
+                            // Arrived at target
+                            // Set position to target and reset velocity to zero
+                            pos.x = target_pos.x;
+                            pos.y = target_pos.y;
+                            velocity.x = 0.0;
+                            velocity.y = 0.0;
+                            *unit_state = UnitState::IsStopped;
+                        } else {
+                            // Compute direction and set velocity
+                            let distance = distance_squared.sqrt();
+                            let dir_x = dx / distance;
+                            let dir_y = dy / distance;
+                            velocity.x = dir_x * max_speed.value;
+                            velocity.y = dir_y * max_speed.value;
+                            // Move the vehicle
+                            pos.x += velocity.x;
+                            pos.y += velocity.y;
+                        }
+                    }
                 }
             }
         }
