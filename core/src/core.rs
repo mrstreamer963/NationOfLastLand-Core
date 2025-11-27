@@ -50,7 +50,7 @@ impl Core {
     }
 
     pub fn create_trash(&mut self) -> Result<(), String> {
-        let bundle = self.r.create_trash();
+        let bundle = self.r.get_bundle_trash();
         self.spawn_entity(bundle);
         Ok(())
     }

@@ -34,7 +34,7 @@ pub fn generate_random_pos(map_size: &MapSize) -> Pos {
 }
 
 impl RandomGenerator {
-    pub fn create_trash(&self) -> (Pos, Health, EntityType, Alert) {
+    pub fn get_bundle_trash(&self) -> (Pos, Health, EntityType, Alert) {
         let pos = generate_random_pos(&self.size);
         let health = generate_between(&self.toxic_health);
         (pos, Health(health), EntityType::Trash, Alert {})
