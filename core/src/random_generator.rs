@@ -35,10 +35,11 @@ fn generate_random_pos(map_size: &MapSize) -> Pos {
 }
 
 impl RandomGenerator {
-    pub fn create_trash(&self, world: &mut World) {
+    pub fn create_trash(&self, world: &mut World) -> (Guid, hecs::Entity) {
         let pos = generate_random_pos(&self.size);
         let health = generate_between(&self.toxic_health);
         let guid = Guid::new();
-        world.spawn((guid, pos, Health(health), EntityType::Trash, Alert {}));
+        let entity = world.spawn((guid, pos, Health(health), EntityType::Trash, Alert {}));
+        (guid, entity)
     }
 }

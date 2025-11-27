@@ -4,5 +4,5 @@ use hecs::Entity;
 
 #[derive(Debug, Default)]
 pub struct WorldState {
-    pub entity_href_to_guid: HashMap<Guid, Entity>,
+    pub guid_to_entity: HashMap<Guid, Entity>,
 }

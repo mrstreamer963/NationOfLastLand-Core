@@ -43,13 +43,14 @@ impl Core {
     }
 
     pub fn create_trash(&mut self) -> Result<(), String> {
-        self.r.create_trash(&mut self.world);
+        let (guid, entity) = self.r.create_trash(&mut self.world);
+        self.ws.guid_to_entity.insert(guid, entity);
         Ok(())
     }
 
     pub fn create_vehicle(&mut self, pos: Pos) -> Result<(), String> {
         let guid = Guid::new();
-        self.world.spawn((
+        let entity = self.world.spawn((
             guid,
             pos,
             Rot { x: 0.0, y: 0.0 },
@@ -61,6 +62,7 @@ impl Core {
             EntityType::Vehicle,
             Vehicle {},
         ));
+        self.ws.guid_to_entity.insert(guid, entity);
         Ok(())
     }
 
