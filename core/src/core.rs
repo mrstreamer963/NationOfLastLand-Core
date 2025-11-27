@@ -42,16 +42,21 @@ impl Core {
         c
     }
 
-    pub fn create_trash(&mut self) -> Result<(), String> {
-        let (guid, entity) = self.r.create_trash(&mut self.world);
+    pub fn spawn_entity(&mut self, bundle: impl hecs::Bundle + Send + Sync + 'static) -> hecs::Entity {
+        let guid = Guid::new();
+        let entity = self.world.spawn((guid, bundle));
         self.ws.guid_to_entity.insert(guid, entity);
+        entity
+    }
+
+    pub fn create_trash(&mut self) -> Result<(), String> {
+        let bundle = self.r.create_trash();
+        self.spawn_entity(bundle);
         Ok(())
     }
 
     pub fn create_vehicle(&mut self, pos: Pos) -> Result<(), String> {
-        let guid = Guid::new();
-        let entity = self.world.spawn((
-            guid,
+        self.spawn_entity((
             pos,
             Rot { x: 0.0, y: 0.0 },
             MaxSpeed { value: 0.1 },
@@ -62,7 +67,6 @@ impl Core {
             EntityType::Vehicle,
             Vehicle {},
         ));
-        self.ws.guid_to_entity.insert(guid, entity);
         Ok(())
     }
 

@@ -1,10 +1,9 @@
-use hecs::World;
 use rand::Rng;
 
 use crate::{
     defines::{MapSize, MinMax},
     modules::{
-        components::{EntityType, Guid, Health, Pos},
+        components::{EntityType, Health, Pos},
         markers::{Alert}
     },
 };
@@ -19,7 +18,7 @@ pub fn generate_between(range: &MinMax) -> f32 {
     rng.gen_range(range.min..=range.max)
 }
 
-fn generate_random_pos(map_size: &MapSize) -> Pos {
+pub fn generate_random_pos(map_size: &MapSize) -> Pos {
     let x_range = MinMax {
         min: 0.0,
         max: map_size.width as f32,
@@ -35,11 +34,9 @@ fn generate_random_pos(map_size: &MapSize) -> Pos {
 }
 
 impl RandomGenerator {
-    pub fn create_trash(&self, world: &mut World) -> (Guid, hecs::Entity) {
+    pub fn create_trash(&self) -> (Pos, Health, EntityType, Alert) {
         let pos = generate_random_pos(&self.size);
         let health = generate_between(&self.toxic_health);
-        let guid = Guid::new();
-        let entity = world.spawn((guid, pos, Health(health), EntityType::Trash, Alert {}));
-        (guid, entity)
+        (pos, Health(health), EntityType::Trash, Alert {})
     }
 }
