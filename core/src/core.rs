@@ -1,4 +1,4 @@
-use crate::defines::{MapSize, MinMax};
+use crate::defines::MinMax;
 use crate::modules::components::{EntityType, Force, Guid, Health, MaxSpeed, Pos, Rot, UnitState, Velocity};
 use crate::modules::markers::{Vehicle};
 
@@ -31,10 +31,6 @@ impl Core {
         let setup = setup::new();
         let r = RandomGenerator {
             toxic_health: MinMax { max: 5.0, min: 1.0 },
-            size: MapSize {
-                width: 10,
-                height: 10,
-            },
         };
 
         let ws = WorldState::default();
@@ -54,7 +50,7 @@ impl Core {
     }
 
     pub fn create_trash(&mut self) -> Result<(), String> {
-        let bundle = self.r.get_bundle_trash();
+        let bundle = self.r.get_bundle_trash(&self.setup.spatial.map_size);
         self.spawn_entity(bundle);
         Ok(())
     }

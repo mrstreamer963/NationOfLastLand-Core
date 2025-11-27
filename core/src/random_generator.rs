@@ -9,7 +9,6 @@ use crate::{
 };
 
 pub struct RandomGenerator {
-    pub size: MapSize,
     pub toxic_health: MinMax
 }
 
@@ -34,8 +33,8 @@ pub fn generate_random_pos(map_size: &MapSize) -> Pos {
 }
 
 impl RandomGenerator {
-    pub fn get_bundle_trash(&self) -> (Pos, Health, EntityType, Alert) {
-        let pos = generate_random_pos(&self.size);
+    pub fn get_bundle_trash(&self, map_size: &MapSize) -> (Pos, Health, EntityType, Alert) {
+        let pos = generate_random_pos(map_size);
         let health = generate_between(&self.toxic_health);
         (pos, Health(health), EntityType::Trash, Alert {})
     }
