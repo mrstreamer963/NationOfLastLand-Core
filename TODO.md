@@ -59,3 +59,11 @@ CleanAttack: {
        distance,
        power
 }
+
+Vehicle -> ActiveItemSloth
+              <VehicleSlot_1, Option(Item)>
+              <VehicleSlot_2, Option(Item)>
+              <VehicleSlot_3, Option(Item)>
+           BackPack[
+              Item, Item, Item
+           ]
