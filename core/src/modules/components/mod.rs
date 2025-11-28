@@ -11,6 +11,7 @@ mod force;
 mod guid;
 mod weapon_mode;
 mod weapon;
+mod item_slot_type;
 
 pub use spatial::{MaxSpeed, Pos, Rot, Velocity, TargetPos};
 pub use reputation::Reputation;
@@ -24,3 +25,4 @@ pub use force::Force;
 pub use guid::Guid;
 pub use weapon_mode::WeaponMode;
 pub use weapon::Weapon;
+pub use item_slot_type::ItemSlotType;
