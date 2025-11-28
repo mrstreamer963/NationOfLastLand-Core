@@ -1,0 +1,19 @@
+damage_types:
+  - DMG_CLEAN
+  - DMG_ACID
+
+items:
+  - type: CLEANER
+    attack_types:
+      - type: DMG_CLEAN
+        damage: 10.0
+  - type: BRUSH
+    attack_types:
+      - type: DMG_CLEAN
+        damage: 1.0
+  - type: ACID_CLEANER
+    attack_types:
+      - type: DMG_CLEAN
+        damage: 1.0
+      - type: DMG_ACID
+        damage: 1.0
