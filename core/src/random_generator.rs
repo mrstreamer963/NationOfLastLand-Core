@@ -3,7 +3,7 @@ use rand::Rng;
 use crate::{
     defines::{MapSize, MinMax},
     modules::{
-        components::{EntityType, Health, Pos},
+        components::{EntityType, Health, Pos, Resistance},
         markers::{Alert}
     },
 };
@@ -33,9 +33,9 @@ pub fn generate_random_pos(map_size: &MapSize) -> Pos {
 }
 
 impl RandomGenerator {
-    pub fn get_bundle_trash(&self, map_size: &MapSize) -> (Pos, Health, EntityType, Alert) {
+    pub fn get_bundle_trash(&self, map_size: &MapSize) -> (Pos, Health, EntityType, Alert, Resistance) {
         let pos = generate_random_pos(map_size);
         let health = generate_between(&self.toxic_health);
-        (pos, Health { current: health, max: health }, EntityType::Trash, Alert {})
+        (pos, Health { current: health, max: health }, EntityType::Trash, Alert {}, Resistance::default())
     }
 }
