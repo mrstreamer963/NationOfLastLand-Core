@@ -9,6 +9,8 @@ mod damage_type;
 mod resistance;
 mod force;
 mod guid;
+mod weapon_mode;
+mod weapon;
 
 pub use spatial::{MaxSpeed, Pos, Rot, Velocity, TargetPos};
 pub use reputation::Reputation;
@@ -20,3 +22,5 @@ pub use damage_type::DamageType;
 pub use resistance::Resistance;
 pub use force::Force;
 pub use guid::Guid;
+pub use weapon_mode::WeaponMode;
+pub use weapon::Weapon;
