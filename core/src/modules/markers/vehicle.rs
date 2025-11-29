@@ -1,4 +1,4 @@
 use serde::Serialize;
 
-#[derive(Serialize, Clone, Copy)]
+#[derive(Serialize, Clone)]
 pub struct Vehicle {}

@@ -156,32 +156,34 @@
             // Scale factor for positions
             const scale = 50;
 
-            // Draw wastes (red squares)
-            worldData.wastes.forEach((waste, index) => {
-                console.log(`Drawing waste ${index} at pos:`, waste.pos);
-                const x = waste.pos.x * scale;
-                const y = waste.pos.y * scale;
-                ctx.fillStyle = 'red';
-                ctx.fillRect(x, y, 20, 20);
-                ctx.strokeStyle = 'black';
-                ctx.lineWidth = 1;
-                ctx.strokeRect(x, y, 20, 20);
-                console.log(`Waste drawn at: ${x}, ${y}`);
-            });
-
-            // Draw vehicles (blue circles)
-            worldData.vehicles.forEach((vehicle, index) => {
-                console.log(`Drawing vehicle ${index} at pos:`, vehicle.pos);
-                const x = vehicle.pos.x * scale;
-                const y = vehicle.pos.y * scale;
-                ctx.beginPath();
-                ctx.arc(x, y, 15, 0, 2 * Math.PI);
-                ctx.fillStyle = 'blue';
-                ctx.fill();
-                ctx.strokeStyle = 'black';
-                ctx.stroke();
-                console.log(`Vehicle drawn at: ${x}, ${y}`);
-            });
+            // Draw units based on type
+            if (worldData.units && Array.isArray(worldData.units)) {
+                worldData.units.forEach((unit, index) => {
+                    console.log(`Drawing unit ${index} at pos:`, unit.Pos, 'type:', unit.EntityType);
+                    if (!unit.Pos || typeof unit.Pos.x !== 'number' || typeof unit.Pos.y !== 'number') {
+                        console.log(`Skipping unit ${index} due to invalid position data`);
+                        return;
+                    }
+                    const x = unit.Pos.x * scale;
+                    const y = unit.Pos.y * scale;
+                    if (unit.EntityType === 'Vehicle') {
+                        ctx.beginPath();
+                        ctx.arc(x, y, 15, 0, 2 * Math.PI);
+                        ctx.fillStyle = 'blue';
+                        ctx.fill();
+                        ctx.strokeStyle = 'black';
+                        ctx.stroke();
+                        console.log(`Vehicle drawn at: ${x}, ${y}`);
+                    } else if (unit.EntityType === 'Waste' || unit.EntityType === 'Trash') {
+                        ctx.fillStyle = 'red';
+                        ctx.fillRect(x, y, 20, 20);
+                        ctx.strokeStyle = 'black';
+                        ctx.lineWidth = 1;
+                        ctx.strokeRect(x, y, 20, 20);
+                        console.log(`Waste drawn at: ${x}, ${y}`);
+                    }
+                });
+            }
 
             console.log('Drawing completed');
         }

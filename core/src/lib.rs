@@ -3,6 +3,5 @@ mod defines;
 mod random_generator;
 
 pub mod modules;
-pub mod ecs_utils;
+pub mod descriptions;
 pub use core::*;
-pub use ecs_utils::*;

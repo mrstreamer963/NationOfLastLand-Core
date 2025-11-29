@@ -9,6 +9,12 @@ crate-type = ["cdylib", "rlib"]
 [dependencies]
 getrandom = { version = "0.2", features = ["js"] }
 hecs.workspace = true
+hecs-macros.workspace = true
 rand = { workspace = true, features = ["getrandom"] }
 serde.workspace = true
 serde_json.workspace = true
+serde_yaml = "0.9.34"
+uuid.workspace = true
+
+[features]
+row-serialize = []
