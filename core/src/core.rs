@@ -38,8 +38,6 @@ impl Core {
         };
         let descriptions = Descriptions::default();
 
-        let descriptions = Descriptions::default();
-
         let mut c = Core {
             world,
             s,
