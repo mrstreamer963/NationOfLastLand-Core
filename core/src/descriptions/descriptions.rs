@@ -74,7 +74,7 @@ pub struct Descriptions {
     /// Список типов повреждений
     pub damage_types: Vec<String>,
 }
-
+ 
 impl Descriptions {
     /// Валидирует соответствия attack_types.type из предметов с damage_types
     pub fn validate_attack_types(&self) -> Result<(), Box<dyn Error>> {

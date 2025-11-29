@@ -87,6 +87,14 @@ impl Core {
         Ok(())
     }
 
+    pub fn create_vehicle_car(&mut self, pos: Pos) -> Result<(), String> {
+        if let Some(vehicle_data) = self.descriptions.vehicles.get("VEHICLE_CAR") {
+            Ok(())
+        } else {
+            Err("Vehicle 'VEHICLE_CAR' not found in descriptions".to_string())
+        }
+    }
+
     pub fn update(&mut self, delta: f64) -> Result<(), String> {
         // Run AI system to process waiting vehicles and assign targets
         ai_vehicle_system(&mut self.world, &self.setup.spatial);
