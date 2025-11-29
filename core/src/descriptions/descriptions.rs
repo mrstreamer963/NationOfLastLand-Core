@@ -19,18 +19,6 @@ pub struct ItemYaml {
     pub attack_types: Vec<AttackTypeYaml>,
 }
 
-impl ItemYaml {
-    pub fn to_weapon_type(&self, range: f32) -> crate::modules::components::WeaponType {
-        use crate::modules::components::{WeaponMode, WeaponType};
-        let modes = self.attack_types.iter().map(|at| WeaponMode {
-            damage_type: at.attack_type.clone(),
-            damage: at.damage as i32,
-            range,
-        }).collect();
-        WeaponType { modes }
-    }
-}
-
 #[derive(Deserialize, Debug)]
 pub struct AttackTypeYaml {
     #[serde(rename = "type")]
