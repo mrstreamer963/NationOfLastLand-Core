@@ -1,7 +1,4 @@
-use crate::defines::Point;
-use serde::Serialize;
+use hecs::Entity;
 
-#[derive(Serialize, Clone, Copy)]
-pub struct Target {
-    pub value: Point,
-}
+#[derive(Clone, Copy)]
+pub struct Target(pub Entity);

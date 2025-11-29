@@ -1,68 +1,116 @@
-use crate::modules::components::{IsMoving, IsStopped, IsWaitingTarget, MaxSpeed, Pos, Rot, Target, ToxicPower, Velocity};
-use crate::modules::entities::Vehicle;
-use crate::modules::entities::Waste;
-use crate::modules::state::State;
-use hecs::World;
-use serde::Serialize;
-use serde_json::Value;
-use std::collections::HashMap;
+use crate::modules::components::*;
+use crate::modules::markers::*;
 
-#[derive(Serialize)]
+use crate::modules::state::State;
+use hecs::{serialize::row::*, World, EntityRef};
+use serde::{Serialize, ser::SerializeMap};
+
+macro_rules! define_serialize_components {
+    (
+        $( $comp:ty ),* $(,)*
+    ) => {
+        fn serialize_components<'a, S>(entity: EntityRef<'a>, map: &mut S) -> Result<(), S::Error>
+        where
+            S: SerializeMap,
+        {
+            $(
+                try_serialize::<$comp, _, _>(&entity, stringify!($comp), map)?;
+            )*
+            Ok(())
+        }
+    };
+}
+
+macro_rules! define_serialize_markers {
+    (
+        $( $mark:ty ),* $(,)*
+    ) => {
+        fn serialize_markers<'a, S>(entity: EntityRef<'a>, map: &mut S) -> Result<(), S::Error>
+        where
+            S: SerializeMap,
+        {
+            $(
+                if entity.has::<$mark>() {
+                    map.serialize_entry(stringify!($mark), &true)?;
+                }
+            )*
+            Ok(())
+        }
+    };
+}
+
+define_serialize_components! {
+    Guid, Pos, Force, EntityType, Health, Velocity, Rot, MaxSpeed, TargetPos, Reputation, TargetId, DamageType
+}
+
+define_serialize_markers! {
+    Alert, Vehicle, IsMoving, IsWaitingTarget, Stopped
+}
+
 struct ExportData {
-    wastes: Vec<HashMap<String, Value>>,
-    vehicles: Vec<HashMap<String, Value>>,
+    units: Vec<serde_json::Value>,
     state: State,
 }
 
-pub fn export_to_json(world: &World, state: &State) -> String {
-    let mut wastes = Vec::new();
-    let mut vehicles = Vec::new();
-
-    // Выборка всех waste
-    for (_id, (pos, toxic_power, _waste)) in world.query::<(&Pos, &ToxicPower, &Waste)>().iter() {
-        wastes.push(HashMap::from([
-            ("id".to_string(), Value::Number(_id.id().into())),
-            ("pos".to_string(), serde_json::to_value(*pos).unwrap()),
-            ("toxic_power".to_string(), serde_json::to_value(*toxic_power).unwrap()),
-        ]));
+impl Serialize for ExportData {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        let mut map = serializer.serialize_map(None)?;
+        map.serialize_entry("units", &self.units)?;
+        map.serialize_entry("state", &self.state)?;
+        map.end()
     }
+}
 
-    // Выборка всех vehicle
-    for (_id, (pos, rot, max_speed, _vehicle)) in world.query::<(&Pos, &Rot, &MaxSpeed, &Vehicle)>().iter() {
-        let mut vehicle_data = HashMap::from([
-            ("id".to_string(), Value::Number(_id.id().into())),
-            ("pos".to_string(), serde_json::to_value(*pos).unwrap()),
-            ("rot".to_string(), serde_json::to_value(*rot).unwrap()),
-            ("max_speed".to_string(), serde_json::to_value(*max_speed).unwrap()),
-        ]);
+struct Context;
 
-        // Add optional components
-        if let Ok(target) = world.get::<&Target>(_id) {
-            vehicle_data.insert("target".to_string(), serde_json::to_value(*target).unwrap());
-        }
-        if let Ok(velocity) = world.get::<&Velocity>(_id) {
-            vehicle_data.insert("velocity".to_string(), serde_json::to_value(*velocity).unwrap());
-        }
+impl SerializeContext for Context {
+    fn serialize_entity<S>(
+        &mut self,
+        entity: EntityRef<'_>,
+        map: S,
+    ) -> Result<S::Ok, S::Error>
+    where
+        S: SerializeMap,
+    {
+        let mut map = map;
+        serialize_components(entity, &mut map)?;
+        serialize_markers(entity, &mut map)?;
+        map.end()
+    }
+}
 
-        // Add state
-        let state = if world.get::<&IsWaitingTarget>(_id).is_ok() {
-            "waiting"
-        } else if world.get::<&IsMoving>(_id).is_ok() {
-            "moving"
-        } else if world.get::<&IsStopped>(_id).is_ok() {
-            "stopped"
-        } else {
-            "unknown"
-        };
-        vehicle_data.insert("state".to_string(), Value::String(state.to_string()));
+pub fn export_to_json(world: &World, state: &State) -> String {
+    let mut units = Vec::new();
 
-        vehicles.push(vehicle_data);
+    for (_id, _entity_type) in world.query::<&EntityType>().iter() {
+        let entity = world.entity(_id).unwrap();
+        let unit_val = serde_json::to_value(UnitExport {
+            entity,
+        }).unwrap();
+        units.push(unit_val);
     }
 
     let data = ExportData {
-        wastes,
-        vehicles,
+        units,
         state: state.clone(),
     };
     serde_json::to_string(&data).unwrap()
+}
+
+struct UnitExport<'a> {
+    entity: EntityRef<'a>,
+}
+
+impl Serialize for UnitExport<'_> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        let map = serializer.serialize_map(None)?;
+        let mut context = Context;
+        context.serialize_entity(self.entity.clone(), map)
+    }
 }

@@ -1,17 +1,15 @@
-use hecs::World;
 use rand::Rng;
 
 use crate::{
     defines::{MapSize, MinMax},
     modules::{
-        components::{Pos, ToxicPower},
-        entities::Waste,
+        components::{DamageType, EntityType, Health, Pos, Resistance},
+        markers::{Alert}
     },
 };
 
 pub struct RandomGenerator {
-    pub size: MapSize,
-    pub toxic_power: MinMax,
+    pub toxic_health: MinMax
 }
 
 pub fn generate_between(range: &MinMax) -> f32 {
@@ -19,7 +17,7 @@ pub fn generate_between(range: &MinMax) -> f32 {
     rng.gen_range(range.min..=range.max)
 }
 
-fn generate_random_pos(map_size: &MapSize) -> Pos {
+pub fn generate_random_pos(map_size: &MapSize) -> Pos {
     let x_range = MinMax {
         min: 0.0,
         max: map_size.width as f32,
@@ -35,9 +33,11 @@ fn generate_random_pos(map_size: &MapSize) -> Pos {
 }
 
 impl RandomGenerator {
-    pub fn create_waste(&self, world: &mut World) {
-        let pos = generate_random_pos(&self.size);
-        let level = 5.0_f32.min(self.toxic_power.max);
-        world.spawn((pos, ToxicPower { level }, Waste {}));
+    pub fn get_bundle_trash(&self, map_size: &MapSize) -> (Pos, Health, EntityType, Alert, Resistance) {
+        let pos = generate_random_pos(map_size);
+        let health = generate_between(&self.toxic_health);
+        let mut resistance = Resistance::default();
+        resistance.resistances.insert(DamageType::Physical, 0.0);
+        (pos, Health { current: health, max: health }, EntityType::Trash, Alert {}, resistance)
     }
 }
