@@ -34,14 +34,14 @@ pub struct VehiclesContainer {
 
 #[derive(Deserialize, Debug)]
 pub struct VehicleYaml {
-    pub max_speed: f64,
+    pub max_speed: f32,
     pub health: HealthYaml,
 }
 
 #[derive(Deserialize, Debug)]
 pub struct HealthYaml {
-    pub current: f64,
-    pub max: f64,
+    pub current: f32,
+    pub max: f32,
 }
 
 /// Функция для десериализации damage_types из статической строки YAML
