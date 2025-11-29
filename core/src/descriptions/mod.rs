@@ -3,7 +3,7 @@ pub use descriptions::Descriptions;
 
 use serde::Deserialize;
 use serde_yaml;
-use std::{collections::HashMap, error::Error, fs::File};
+use std::{collections::HashMap, error::Error};
 
 /// Структура для десериализации файла damage_types.yml
 #[derive(Deserialize)]
@@ -11,10 +11,9 @@ pub struct DamageTypesYaml {
     damage_types: Vec<String>,
 }
 
-/// Функция для десериализации файла damage_types.yml
-pub fn load_damage_types(path: &str) -> Result<Vec<String>, Box<dyn Error>> {
-    let file = File::open(path)?;
-    let data: DamageTypesYaml = serde_yaml::from_reader(file)?;
+/// Функция для десериализации damage_types из статической строки YAML
+pub fn load_damage_types_static(yaml: &str) -> Result<Vec<String>, serde_yaml::Error> {
+    let data: DamageTypesYaml = serde_yaml::from_str(yaml)?;
     Ok(data.damage_types)
 }
 
@@ -45,25 +44,14 @@ pub fn load_items_static(yaml: &str) -> Result<HashMap<String, String>, Box<dyn 
     let data: ItemsYaml = serde_yaml::from_str(yaml)?;
     let mut items = HashMap::new();
     for item in data.items {
-        let description = format!("Атаки: {}", item.attack_types.iter()
-            .map(|at| format!("{} (урон: {})", at.attack_type, at.damage))
-            .collect::<Vec<_>>()
-            .join(", "));
-        items.insert(item.item_type, description);
-    }
-    Ok(items)
-}
-
-/// Функция для десериализации файла items.yml
-pub fn load_items(path: &str) -> Result<HashMap<String, String>, Box<dyn Error>> {
-    let file = File::open(path)?;
-    let data: ItemsYaml = serde_yaml::from_reader(file)?;
-    let mut items = HashMap::new();
-    for item in data.items {
-        let description = format!("Атаки: {}", item.attack_types.iter()
-            .map(|at| format!("{} (урон: {})", at.attack_type, at.damage))
-            .collect::<Vec<_>>()
-            .join(", "));
+        let description = format!(
+            "Атаки: {}",
+            item.attack_types
+                .iter()
+                .map(|at| format!("{} (урон: {})", at.attack_type, at.damage))
+                .collect::<Vec<_>>()
+                .join(", ")
+        );
         items.insert(item.item_type, description);
     }
     Ok(items)
