@@ -1,5 +1,6 @@
 use crate::defines::MinMax;
-use crate::modules::components::{Descriptions, EntityType, Force, Guid, Health, MaxSpeed, Pos, Rot, Velocity};
+use crate::modules::components::{EntityType, Force, Guid, Health, MaxSpeed, Pos, Rot, Velocity};
+use crate::descriptions::Descriptions;
 use crate::modules::markers::{Vehicle, IsWaitingTarget};
 
 use crate::modules::exporter::export_to_json;
