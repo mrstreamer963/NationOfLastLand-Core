@@ -1,2 +1,4 @@
 vehicles:
   VEHICLE_CAR:
+    max_speed: 1.0
+    
