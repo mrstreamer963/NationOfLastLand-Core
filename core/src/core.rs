@@ -9,6 +9,7 @@ use crate::modules::state::State;
 use crate::modules::systems::ai_vehicle::ai_vehicle_system;
 use crate::random_generator::RandomGenerator;
 use hecs::World;
+use std::error::Error;
 
 const DAMAGE_TYPES_YAML: &str = include_str!("../../data/damage_types.yml");
 const ITEMS_YAML: &str = include_str!("../../data/items.yml");
@@ -108,7 +109,7 @@ impl Core {
         export_to_json(&self.world, &self.s)
     }
 
-    fn load(&mut self) -> Result<(), serde_yaml::Error> {
+    fn load(&mut self) -> Result<(), Box<dyn Error>> {
         self.descriptions.damage_types = load_damage_types_static(DAMAGE_TYPES_YAML)?;
         self.descriptions.items = load_items_static(ITEMS_YAML).unwrap_or_default();
         Ok(())
