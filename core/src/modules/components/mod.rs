@@ -12,6 +12,7 @@ mod guid;
 mod weapon_mode;
 mod weapon;
 mod item_slot_type;
+mod descriptions;
 
 pub use spatial::{MaxSpeed, Pos, Rot, Velocity, TargetPos};
 pub use reputation::Reputation;
@@ -20,6 +21,7 @@ pub use target_id::TargetId;
 pub use target::Target;
 pub use entity_type::EntityType;
 pub use damage_type::DamageType;
+pub use descriptions::Descriptions;
 pub use resistance::Resistance;
 pub use force::Force;
 pub use guid::Guid;

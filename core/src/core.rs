@@ -1,5 +1,5 @@
 use crate::defines::MinMax;
-use crate::modules::components::{EntityType, Force, Guid, Health, MaxSpeed, Pos, Rot, Velocity};
+use crate::modules::components::{Descriptions, EntityType, Force, Guid, Health, MaxSpeed, Pos, Rot, Velocity};
 use crate::modules::markers::{Vehicle, IsWaitingTarget};
 
 use crate::modules::exporter::export_to_json;
@@ -14,6 +14,7 @@ pub struct Core {
     r: RandomGenerator,
     s: State,
     setup: setup::Setup,
+    descriptions: Descriptions,
 }
 
 impl Default for Core {
@@ -30,8 +31,9 @@ impl Core {
         let r = RandomGenerator {
             toxic_health: MinMax { max: 5.0, min: 1.0 },
         };
+        let descriptions = Descriptions::default();
 
-        let mut c = Core { world, s, r, setup };
+        let mut c = Core { world, s, r, setup, descriptions };
 
         c.init_world();
         c
@@ -73,6 +75,14 @@ impl Core {
         self.s.time += delta;
 
         Ok(())
+    }
+
+    pub fn get_descriptions(&self) -> &Descriptions {
+        &self.descriptions
+    }
+
+    pub fn get_descriptions_mut(&mut self) -> &mut Descriptions {
+        &mut self.descriptions
     }
 
     pub fn export_world(&self) -> String {
