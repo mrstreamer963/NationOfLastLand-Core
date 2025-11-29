@@ -1,5 +1,5 @@
 use crate::defines::MinMax;
-use crate::descriptions::{Descriptions, load_damage_types_static, load_items_static};
+use crate::descriptions::{Descriptions, load_damage_types_static, load_items_static, load_vehicles_static};
 use crate::modules::components::{EntityType, Force, Guid, Health, MaxSpeed, Pos, Rot, Velocity};
 use crate::modules::markers::{IsWaitingTarget, Vehicle};
 
@@ -13,6 +13,7 @@ use std::error::Error;
 
 const DAMAGE_TYPES_YAML: &str = include_str!("../../data/damage_types.yml");
 const ITEMS_YAML: &str = include_str!("../../data/items.yml");
+const VEHICLES_YAML: &str = include_str!("../../data/vehicles.yml");
 
 pub struct Core {
     world: World,
@@ -111,6 +112,7 @@ impl Core {
     fn load(&mut self) -> Result<(), Box<dyn Error>> {
         self.descriptions.damage_types = load_damage_types_static(DAMAGE_TYPES_YAML)?;
         self.descriptions.items = load_items_static(ITEMS_YAML)?.items;
+        self.descriptions.vehicles = load_vehicles_static(VEHICLES_YAML)?.vehicles;
         self.descriptions.validate_attack_types()?;
         Ok(())
     }

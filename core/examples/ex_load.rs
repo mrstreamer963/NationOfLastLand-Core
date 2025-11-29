@@ -25,4 +25,14 @@ fn main() {
             }
         }
     }
+
+    // Вывод транспортных средств
+    println!("\nVehicles:");
+    for (name, vehicle) in &descriptions.vehicles {
+        println!("  {}:", name);
+        println!("    max_speed: {}", vehicle.max_speed);
+        println!("    health:");
+        println!("      current: {}", vehicle.health.current);
+        println!("      max: {}", vehicle.health.max);
+    }
 }

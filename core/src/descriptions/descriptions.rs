@@ -26,6 +26,24 @@ pub struct ItemAttackTypeYaml {
     pub damage: f64,
 }
 
+/// Структура для десериализации файла vehicles.yml
+#[derive(Deserialize)]
+pub struct VehiclesContainer {
+    pub vehicles: HashMap<String, VehicleYaml>,
+}
+
+#[derive(Deserialize, Debug)]
+pub struct VehicleYaml {
+    pub max_speed: f64,
+    pub health: HealthYaml,
+}
+
+#[derive(Deserialize, Debug)]
+pub struct HealthYaml {
+    pub current: f64,
+    pub max: f64,
+}
+
 /// Функция для десериализации damage_types из статической строки YAML
 pub fn load_damage_types_static(yaml: &str) -> Result<Vec<String>, Box<dyn Error>> {
     let data: DamageTypesYaml = serde_yaml::from_str(yaml)?;
@@ -34,6 +52,11 @@ pub fn load_damage_types_static(yaml: &str) -> Result<Vec<String>, Box<dyn Error
 
 /// Функция для получения предметов из статических данных
 pub fn load_items_static(yaml: &str) -> Result<ItemsContainer, Box<dyn Error>> {
+    Ok(serde_yaml::from_str(yaml)?)
+}
+
+/// Функция для получения транспортных средств из статических данных
+pub fn load_vehicles_static(yaml: &str) -> Result<VehiclesContainer, Box<dyn Error>> {
     Ok(serde_yaml::from_str(yaml)?)
 }
 
@@ -46,6 +69,8 @@ pub struct Descriptions {
     pub alerts: HashMap<String, String>,
     /// Предметы, где ключ - название предмета, значение - данные предмета
     pub items: HashMap<String, ItemYaml>,
+    /// Транспортные средства, где ключ - название транспорта, значение - данные транспорта
+    pub vehicles: HashMap<String, VehicleYaml>,
     /// Список типов повреждений
     pub damage_types: Vec<String>,
 }
