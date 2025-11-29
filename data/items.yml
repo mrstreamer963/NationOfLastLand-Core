@@ -11,6 +11,7 @@ items:
           damage: 1.0
   ITEM_ACID_CLEANER:
     attack_types:
+# combo-attack with two damage type
       ATTACK_COMBO:
         - type: DMG_CLEAN
           damage: 1.0
