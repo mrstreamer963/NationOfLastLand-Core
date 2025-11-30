@@ -43,17 +43,11 @@ struct VehiclesYaml {
 /// Структура для хранения транспортных средств
 #[derive(Debug, Default)]
 pub struct VehiclesContainer {
-    pub vehicles: HashMap<String, VehicleData>,
+    pub vehicles: HashMap<String, VehicleYaml>,
 }
 
 #[derive(Deserialize, Debug)]
-pub struct VehicleData {
-    pub max_speed: f32,
-    pub health: HealthYaml,
-}
-
-#[derive(Deserialize)]
-struct VehicleYaml {
+pub struct VehicleYaml {
     #[serde(rename = "type")]
     pub vehicle_type: String,
     pub max_speed: f32,
@@ -87,11 +81,7 @@ pub fn load_vehicles_static(yaml: &str) -> Result<VehiclesContainer, Box<dyn Err
     let yaml_data: VehiclesYaml = serde_yaml::from_str(yaml)?;
     let mut vehicles_map = HashMap::new();
     for vehicle in yaml_data.vehicles {
-        let data = VehicleData {
-            max_speed: vehicle.max_speed,
-            health: vehicle.health,
-        };
-        vehicles_map.insert(vehicle.vehicle_type, data);
+        vehicles_map.insert(vehicle.vehicle_type.clone(), vehicle);
     }
     Ok(VehiclesContainer { vehicles: vehicles_map })
 }
@@ -106,7 +96,7 @@ pub struct Descriptions {
     /// Предметы, где ключ - название предмета, значение - данные предмета
     pub items: HashMap<String, ItemYaml>,
     /// Транспортные средства, где ключ - название транспорта, значение - данные транспорта
-    pub vehicles: HashMap<String, VehicleData>,
+    pub vehicles: HashMap<String, VehicleYaml>,
     /// Список типов повреждений
     pub damage_types: Vec<String>,
 }
