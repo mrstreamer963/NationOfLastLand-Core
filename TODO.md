@@ -71,3 +71,24 @@ Vehicle -> ActiveItemSloth
               Item, Item, Item
            ]
 
+
+
+## по поводу автогенерации полей через макросы и derive -
+нейросетка нагенерила множество ужасного кода, но в итоге все сводилось к генерации дефолтного бандла и кучи ручных insert тех полей, которые
+в исходном отстутствовали - это pos, rot, speed, etc.... В итоге было принято решение создавать единый бандл на основе
+данных из описания и отсутствующих полей - 
+
+```
+        if let Some(vehicle_data) = self.descriptions.vehicles.get(vehicle_key) {
+            self.spawn_entity((
+                pos,
+                Rot { x: 0.0, y: 0.0 },
+                vehicle_data.max_speed,
+                Velocity { x: 0.0, y: 0.0 },
+                vehicle_data.health,
+                Force(100.0),
+                IsWaitingTarget {},
+                EntityType::Vehicle,
+                Vehicle {},
+            ));
+```
