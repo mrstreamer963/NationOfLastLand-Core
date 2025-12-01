@@ -100,14 +100,16 @@ impl Core {
                     });
                 }
             }
-            let weapon_type = WeaponType { modes };
-            let e =self.spawn_entity((
+            let e = self.spawn_entity((
                 pos,
                 Rot { x: 0.0, y: 0.0 },
-                weapon_type,
                 EntityType::Item,
                 Item {},
             ));
+            if !modes.is_empty() {
+                let weapon_type = WeaponType { modes };
+                self.world.insert_one(e, weapon_type).unwrap();
+            }
             Ok(e)
         } else {
             Err(format!("Item '{}' not found in descriptions", item_key))
