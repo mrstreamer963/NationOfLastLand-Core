@@ -1,7 +1,7 @@
 use crate::defines::MinMax;
 use crate::descriptions::{Descriptions, load_damage_types_static, load_items_static, load_vehicles_static};
 use crate::modules::components::{EntityType, Force, Guid, Pos, Rot, Velocity};
-use crate::modules::markers::{IsWaitingTarget, Vehicle};
+use crate::modules::markers::{IsWaitingTarget, Vehicle, Item};
 
 use crate::modules::exporter::export_to_json;
 use crate::modules::setup;
@@ -85,6 +85,21 @@ impl Core {
             Ok(())
         } else {
             Err(format!("Vehicle '{}' not found in descriptions", vehicle_key))
+        }
+    }
+
+    pub fn create_item_from_yaml(&mut self, item_key: &str, pos: Pos) -> Result<(), String> {
+        if self.descriptions.items.contains_key(item_key) {
+            self.spawn_entity((
+                pos,
+                Rot { x: 0.0, y: 0.0 },
+                Velocity { x: 0.0, y: 0.0 },
+                EntityType::Item,
+                Item {},
+            ));
+            Ok(())
+        } else {
+            Err(format!("Item '{}' not found in descriptions", item_key))
         }
     }
 
