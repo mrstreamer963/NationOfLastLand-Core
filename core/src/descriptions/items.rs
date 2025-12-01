@@ -18,6 +18,7 @@ pub struct ItemsContainer {
 pub struct ItemYaml {
     #[serde(rename = "type")]
     pub item_type: String,
+    #[serde(default)]
     pub attack_types: HashMap<String, Vec<ItemAttackTypeYaml>>,
 }
 
