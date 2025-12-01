@@ -8,7 +8,7 @@ use crate::modules::setup;
 use crate::modules::state::State;
 use crate::modules::systems::ai_vehicle::ai_vehicle_system;
 use crate::random_generator::RandomGenerator;
-use hecs::World;
+use hecs::{Entity, World};
 use std::error::Error;
 
 const DAMAGE_TYPES_YAML: &str = include_str!("../../data/damage_types.yml");
@@ -69,9 +69,9 @@ impl Core {
         Ok(())
     }
 
-    pub fn create_vehicle_from_yaml(&mut self, vehicle_key: &str, pos: Pos) -> Result<(), String> {
+    pub fn create_vehicle_from_yaml(&mut self, vehicle_key: &str, pos: Pos) -> Result<Entity, String> {
         if let Some(vehicle_data) = self.descriptions.vehicles.get(vehicle_key) {
-            self.spawn_entity((
+            let e = self.spawn_entity((
                 pos,
                 Rot { x: 0.0, y: 0.0 },
                 vehicle_data.max_speed,
@@ -82,13 +82,13 @@ impl Core {
                 EntityType::Vehicle,
                 Vehicle {},
             ));
-            Ok(())
+            Ok(e)
         } else {
             Err(format!("Vehicle '{}' not found in descriptions", vehicle_key))
         }
     }
 
-    pub fn create_item_from_yaml(&mut self, item_key: &str, pos: Pos) -> Result<(), String> {
+    pub fn create_item_from_yaml(&mut self, item_key: &str, pos: Pos) -> Result<Entity, String> {
         if let Some(item_data) = self.descriptions.items.get(item_key) {
             let mut modes = Vec::new();
             for attack_type_list in item_data.attack_types.values() {
@@ -101,7 +101,7 @@ impl Core {
                 }
             }
             let weapon_type = WeaponType { modes };
-            self.spawn_entity((
+            let e =self.spawn_entity((
                 pos,
                 Rot { x: 0.0, y: 0.0 },
                 weapon_type,
@@ -109,7 +109,7 @@ impl Core {
                 EntityType::Item,
                 Item {},
             ));
-            Ok(())
+            Ok(e)
         } else {
             Err(format!("Item '{}' not found in descriptions", item_key))
         }
