@@ -5,3 +5,5 @@ vehicles:
 # позволяет сделать например BREAK_VEHICLE_CAR с параметром current: 1.0 
     current: 5.0
     max: 5.0
+  active_sloth:
+    - type: VEHICLE_SLOT
