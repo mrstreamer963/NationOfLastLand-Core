@@ -30,9 +30,7 @@ fn main() {
     println!("\nVehicles:");
     for (name, vehicle) in &descriptions.vehicles {
         println!("  {}:", name);
-        println!("    max_speed: {}", vehicle.max_speed.0);
-        println!("    health:");
-        println!("      current: {}", vehicle.health.current);
-        println!("      max: {}", vehicle.health.max);
+        println!("    max_speed: {}", vehicle.max_speed);
+        println!("    max_health: {}", vehicle.max_health);
     }
 }
