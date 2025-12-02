@@ -105,11 +105,11 @@ impl Core {
         }
     }
 
-    pub fn create_item_from_yaml(&mut self, item_key: &str, pos: Pos) -> Result<Entity, String> {
+    pub fn create_item_from_yaml(&mut self, item_key: &str, _pos: Pos) -> Result<Entity, String> {
         if let Some(item_data) = self.descriptions.items.get(item_key) {
             let mut modes = Vec::new();
             for interaction in &item_data.interactions {
-                for (dmg_type, dmg_value) in &interaction.damage {
+                for (dmg_type, dmg_value) in &interaction.action {
                     modes.push(WeaponMode {
                         damage_type: dmg_type.clone(),
                         damage: *dmg_value as i32,

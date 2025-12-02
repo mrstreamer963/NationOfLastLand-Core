@@ -25,11 +25,11 @@ impl Descriptions {
 
         for (item_name, item) in &self.items {
             for interaction in &item.interactions {
-                for dmg_type in interaction.damage.keys() {
-                    if !valid_damage_types.contains(dmg_type) {
+                for action_type in interaction.action.keys() {
+                    if !valid_damage_types.contains(action_type) {
                         return Err(format!(
                             "Invalid attack type '{}' in item '{}'. Must match one of: {:?}",
-                            dmg_type, item_name, self.damage_types
+                            action_type, item_name, self.damage_types
                         ).into());
                     }
                 }

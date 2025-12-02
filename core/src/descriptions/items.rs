@@ -30,7 +30,7 @@ pub struct ItemYaml {
 pub struct ItemInteraction {
     pub name: String,
     #[serde(flatten)]
-    pub damage: HashMap<String, f64>,
+    pub action: HashMap<String, f64>,
 }
 
 // Keeping this for compatibility, but it might not be used anymore

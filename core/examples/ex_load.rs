@@ -20,8 +20,8 @@ fn main() {
         println!("    interactions:");
         for interaction in &item.interactions {
             println!("      {}:", interaction.name);
-            for (dmg_type, dmg_value) in &interaction.damage {
-                println!("        - {}: {}", dmg_type, dmg_value);
+            for (action_type, action_value) in &interaction.action {
+                println!("        - {}: {}", action_type, action_value);
             }
         }
         if let Some(throwable) = item.throwable {
