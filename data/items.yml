@@ -4,26 +4,19 @@ items:
   takeable: ~
 - type: ITEM_CLEANER
   takeable: ~
-  attack_types:
-    ATTACK_CLEAN:
-      - type: DMG_CLEAN
-        damage: 10.0
+  interactions:
+    - name: ATTACK_CLEAN
+      DMG_CLEAN: 10.0
 - type: ITEM_BRUSH
-  attack_types:
-    ATTACK_CLEAN:
-      - type: DMG_CLEAN
-        damage: 1.0
+  interactions:
+    - name: ATTACK_CLEAN
+      DMG_CLEAN: 1.0
 - type: ITEM_ACID_CLEANER
-  attack_types:
-# example combo-attack with two damage type
-    ATTACK_COMBO:
-      - type: DMG_CLEAN
-        damage: 1.0
-      - type: DMG_ACID
-        damage: 1.0
-    ATTACK_ACID:
-      - type: DMG_ACID
-        damage: 1.0
-    ATTACK_CLEAN:
-      - type: DMG_CLEAN
-        damage: 1.0
+  interactions:
+    - name: ATTACK_COMBO
+      DMG_CLEAN: 1.0
+      DMG_ACID: 1.0
+    - name: ATTACK_ACID
+      DMG_ACID: 1.0
+    - name: ATTACK_CLEAN
+      DMG_CLEAN: 1.0
