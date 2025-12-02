@@ -1,2 +1,1 @@
-#[derive(Clone)]
-pub struct BaseType(pub String);
+pub type BaseType = String;
