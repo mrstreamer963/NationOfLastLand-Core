@@ -3,4 +3,12 @@ vehicles:
   max_speed: 0.1
   max_health: 5.0
   active_sloth:
-    - type: VEHICLE_SLOT
+    - id: "front_left"
+      slot_type: "main"
+      mount_point: "turret_front_left"
+    - id: "front_rigth"
+      slot_type: "main"
+      mount_point: "turret_front_right"
+    - id: "roof"
+      slot_type: "auxiliary"
+      mount_point: "roof_mount"
