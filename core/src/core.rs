@@ -3,7 +3,7 @@ use crate::descriptions::{Descriptions, load_damage_types_static, load_items_sta
 use crate::modules::components::{ActiveSlots, BaseType, EntityType, Force, Guid, Health, MaxSpeed, Owner, Pos, Rot, SlotType, Velocity, WeaponMode, WeaponType};
 use crate::modules::markers::{IsWaitingTarget, Vehicle, Item};
 
-use crate::modules::exporter::export_to_json;
+use crate::modules::exporter::{export_to_json, export_entity_to_json};
 use crate::modules::setup;
 use crate::modules::state::State;
 use crate::modules::systems::ai_vehicle::ai_vehicle_system;
@@ -181,6 +181,10 @@ impl Core {
 
     pub fn export_world(&self, is_pretty: bool) -> String {
         export_to_json(&self.world, &self.s, is_pretty)
+    }
+
+    pub fn export_entity(&self, entity: Entity, is_pretty: bool) -> String {
+        export_entity_to_json(&self.world, entity, is_pretty)
     }
 
     fn load(&mut self) -> Result<(), Box<dyn Error>> {

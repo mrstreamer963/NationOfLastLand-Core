@@ -7,7 +7,6 @@ fn main() {
 
     let s = core.export_world(true);
     
-
     println!("Export world: {s}");
 
     // for _i in 0..100 {

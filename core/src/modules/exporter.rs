@@ -2,7 +2,7 @@ use crate::modules::components::*;
 use crate::modules::markers::*;
 
 use crate::modules::state::State;
-use hecs::{serialize::row::*, World, EntityRef};
+use hecs::{serialize::row::*, World, EntityRef, Entity};
 use serde::{Serialize, ser::SerializeMap};
 
 macro_rules! define_serialize_components {
@@ -101,6 +101,18 @@ pub fn export_to_json(world: &World, state: &State, is_pretty: bool) -> String {
         return serde_json::to_string_pretty(&data).unwrap()
     }
     serde_json::to_string(&data).unwrap()
+}
+
+pub fn export_entity_to_json(world: &World, entity: Entity, is_pretty: bool) -> String {
+    let entity_ref = world.entity(entity).unwrap();
+    let unit_val = serde_json::to_value(UnitExport {
+        entity: entity_ref,
+    }).unwrap();
+    if is_pretty {
+        serde_json::to_string_pretty(&unit_val).unwrap()
+    } else {
+        serde_json::to_string(&unit_val).unwrap()
+    }
 }
 
 struct UnitExport<'a> {
