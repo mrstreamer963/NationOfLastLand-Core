@@ -18,14 +18,22 @@ pub struct ItemsContainer {
 pub struct ItemYaml {
     #[serde(rename = "type")]
     pub item_type: String,
-    #[serde(default)]
-    pub attack_types: HashMap<String, Vec<ItemAttackTypeYaml>>,
     #[serde(default, deserialize_with = "deserialize_marker")]
     pub throwable: Option<bool>,
     #[serde(default, deserialize_with = "deserialize_marker")]
     pub takeable: Option<bool>,
+    #[serde(default)]
+    pub interactions: Vec<ItemInteraction>,
 }
 
+#[derive(Deserialize, Debug)]
+pub struct ItemInteraction {
+    pub name: String,
+    #[serde(flatten)]
+    pub damage: HashMap<String, f64>,
+}
+
+// Keeping this for compatibility, but it might not be used anymore
 #[derive(Deserialize, Debug)]
 pub struct ItemAttackTypeYaml {
     #[serde(rename = "type")]

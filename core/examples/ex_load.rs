@@ -17,11 +17,11 @@ fn main() {
     println!("\nItems:");
     for (name, item) in &descriptions.items {
         println!("  {}:", name);
-        println!("    attack_types:");
-        for (attack_name, damages) in &item.attack_types {
-            println!("      {}:", attack_name);
-            for entry in damages {
-                println!("        - type: {}, damage={}", entry.attack_type, entry.damage);
+        println!("    interactions:");
+        for interaction in &item.interactions {
+            println!("      {}:", interaction.name);
+            for (dmg_type, dmg_value) in &interaction.damage {
+                println!("        - {}: {}", dmg_type, dmg_value);
             }
         }
         if let Some(throwable) = item.throwable {
