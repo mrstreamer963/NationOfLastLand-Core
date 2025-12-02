@@ -3,27 +3,23 @@ use serde::Serialize;
 use std::collections::HashMap;
 
 #[derive(Clone)]
-pub struct AttachedItems {
-    pub items: HashMap<String, Entity>,
-}
+pub struct AttachedItems(HashMap<String, Entity>);
 
 impl AttachedItems {
     pub fn new() -> Self {
-        Self {
-            items: HashMap::new(),
-        }
+        Self(HashMap::new())
     }
 
     pub fn attach(&mut self, slot_id: &str, item: Entity) {
-        self.items.insert(slot_id.to_string(), item);
+        self.0.insert(slot_id.to_string(), item);
     }
 
     pub fn detach(&mut self, slot_id: &str) {
-        self.items.remove(slot_id);
+        self.0.remove(slot_id);
     }
 
     pub fn get(&self, slot_id: &str) -> Option<Entity> {
-        self.items.get(slot_id).copied()
+        self.0.get(slot_id).copied()
     }
 }
 
@@ -32,6 +28,6 @@ impl Serialize for AttachedItems {
     where
         S: serde::Serializer,
     {
-        self.items.serialize(serializer)
+        self.0.serialize(serializer)
     }
 }
