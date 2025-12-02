@@ -12,6 +12,7 @@ mod guid;
 mod weapon_mode;
 mod weapon_type;
 mod item_slot_type;
+mod active_slots;
 mod owner;
 
 pub use spatial::{MaxSpeed, Pos, Rot, Velocity, TargetPos};
@@ -27,4 +28,5 @@ pub use guid::Guid;
 pub use weapon_mode::WeaponMode;
 pub use weapon_type::WeaponType;
 pub use item_slot_type::ActiveItemSlotType;
+pub use active_slots::{ActiveSlots, SlotType, ActiveSlot};
 pub use owner::Owner;

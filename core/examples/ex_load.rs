@@ -32,5 +32,13 @@ fn main() {
         println!("  {}:", name);
         println!("    max_speed: {}", vehicle.max_speed);
         println!("    max_health: {}", vehicle.max_health);
+        if !vehicle.active_slot.is_empty() {
+            println!("    active_slot:");
+            for slot in &vehicle.active_slot {
+                println!("      - id: {}", slot.id);
+                println!("        slot_type: {}", slot.slot_type);
+                println!("        mount_point: {}", slot.mount_point);
+            }
+        }
     }
 }

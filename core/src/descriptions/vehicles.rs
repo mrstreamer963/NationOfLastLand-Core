@@ -14,12 +14,21 @@ pub struct VehiclesContainer {
     pub vehicles: HashMap<String, VehicleYaml>,
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Debug, Clone)]
+pub struct Slot {
+    pub id: String,
+    pub slot_type: String,
+    pub mount_point: String,
+}
+
+#[derive(Deserialize, Debug, Clone)]
 pub struct VehicleYaml {
     #[serde(rename = "type")]
     pub vehicle_type: String,
     pub max_speed: f32,
     pub max_health: f32,
+    #[serde(rename = "active_sloth")]
+    pub active_slot: Vec<Slot>,
 }
 
 /// Функция для получения транспортных средств из статических данных

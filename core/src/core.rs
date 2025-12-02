@@ -1,6 +1,6 @@
 use crate::defines::MinMax;
 use crate::descriptions::{Descriptions, load_damage_types_static, load_items_static, load_vehicles_static};
-use crate::modules::components::{EntityType, Force, Guid, Health, Pos, Rot, Velocity, WeaponType, WeaponMode};
+use crate::modules::components::{EntityType, Force, Guid, Health, Pos, Rot, Velocity, WeaponType, WeaponMode, ActiveSlots, SlotType};
 use crate::modules::markers::{IsWaitingTarget, Vehicle, Item};
 
 use crate::modules::exporter::export_to_json;
@@ -70,7 +70,8 @@ impl Core {
     }
 
     pub fn create_vehicle_from_yaml(&mut self, vehicle_key: &str, pos: Pos) -> Result<Entity, String> {
-        if let Some(vehicle_data) = self.descriptions.vehicles.get(vehicle_key) {
+        if let Some(vehicle_data_ref) = self.descriptions.vehicles.get(vehicle_key) {
+            let vehicle_data = vehicle_data_ref.clone();
             let e = self.spawn_entity((
                 pos,
                 Rot { x: 0.0, y: 0.0 },
@@ -82,6 +83,22 @@ impl Core {
                 EntityType::Vehicle,
                 Vehicle {},
             ));
+
+            // Add active slots if present
+            let mut active_slots = Vec::new();
+            for slot in &vehicle_data.active_slot {
+                let slot_type = SlotType::from_str(&slot.slot_type).map_err(|e| format!("Invalid slot type for vehicle {}: {}", vehicle_key, e))?;
+                active_slots.push(crate::modules::components::ActiveSlot {
+                    id: slot.id.clone(),
+                    slot_type,
+                    mount_point: slot.mount_point.clone(),
+                });
+            }
+            if !active_slots.is_empty() {
+                let active_slots_comp = ActiveSlots::new(active_slots);
+                self.world.insert_one(e, active_slots_comp).map_err(|e| format!("Failed to insert ActiveSlots component: {:?}", e))?;
+            }
+
             Ok(e)
         } else {
             Err(format!("Vehicle '{}' not found in descriptions", vehicle_key))
