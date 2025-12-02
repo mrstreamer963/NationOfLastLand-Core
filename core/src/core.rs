@@ -149,8 +149,8 @@ impl Core {
         &mut self.descriptions
     }
 
-    pub fn export_world(&self) -> String {
-        export_to_json(&self.world, &self.s)
+    pub fn export_world(&self, is_pretty: bool) -> String {
+        export_to_json(&self.world, &self.s, is_pretty)
     }
 
     fn load(&mut self) -> Result<(), Box<dyn Error>> {

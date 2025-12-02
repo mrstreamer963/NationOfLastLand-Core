@@ -61,7 +61,7 @@ pub unsafe extern "C" fn export_world(core: *const Core) -> *mut c_char {
         return std::ptr::null_mut();
     }
     unsafe {
-        let json = (*core).export_world();
+        let json = (*core).export_world(false);
         match CString::new(json) {
             Ok(c_str) => c_str.into_raw(),
             Err(_) => std::ptr::null_mut(),

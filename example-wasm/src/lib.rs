@@ -46,5 +46,5 @@ pub fn update_world(delta_ms: f64) {
 // Function to get world data for rendering
 #[wasm_bindgen]
 pub fn get_world_data() -> String {
-    CORE.with(|core| core.borrow().export_world())
+    CORE.with(|core| core.borrow().export_world(false))
 }

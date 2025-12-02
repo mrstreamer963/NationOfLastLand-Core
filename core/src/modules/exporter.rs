@@ -82,7 +82,7 @@ impl SerializeContext for Context {
     }
 }
 
-pub fn export_to_json(world: &World, state: &State) -> String {
+pub fn export_to_json(world: &World, state: &State, is_pretty: bool) -> String {
     let mut units = Vec::new();
 
     for (_id, _entity_type) in world.query::<&EntityType>().iter() {
@@ -97,6 +97,9 @@ pub fn export_to_json(world: &World, state: &State) -> String {
         units,
         state: state.clone(),
     };
+    if is_pretty {
+        return serde_json::to_string_pretty(&data).unwrap()
+    }
     serde_json::to_string(&data).unwrap()
 }
 
