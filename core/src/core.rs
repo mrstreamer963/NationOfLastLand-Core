@@ -118,8 +118,6 @@ impl Core {
                 }
             }
             let e = self.spawn_entity((
-                pos,
-                Rot { x: 0.0, y: 0.0 },
                 EntityType::Item,
                 Item {},
             ));
