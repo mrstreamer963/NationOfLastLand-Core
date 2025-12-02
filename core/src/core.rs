@@ -73,7 +73,7 @@ impl Core {
         if let Some(vehicle_data_ref) = self.descriptions.vehicles.get(vehicle_key) {
             let vehicle_data = vehicle_data_ref.clone();
             let e = self.spawn_entity((
-                BaseType(vehicle_key.as_bytes()),
+                BaseType(vehicle_key.to_string()),
                 pos,
                 Rot { x: 0.0, y: 0.0 },
                 MaxSpeed(vehicle_data.max_speed),
