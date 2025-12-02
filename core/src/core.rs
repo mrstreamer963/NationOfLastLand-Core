@@ -1,6 +1,6 @@
 use crate::defines::MinMax;
 use crate::descriptions::{Descriptions, load_damage_types_static, load_items_static, load_vehicles_static};
-use crate::modules::components::{ActiveSlots, BaseType, EntityType, Force, Guid, Health, MaxSpeed, Owner, Pos, Rot, SlotType, Velocity, WeaponMode, WeaponType};
+use crate::modules::components::{BaseType, EntityType, Force, Guid, Health, MaxSpeed, Owner, Pos, Rot, Velocity, WeaponMode, WeaponType};
 use crate::modules::markers::{IsWaitingTarget, Vehicle, Item};
 
 use crate::modules::exporter::{export_to_json, export_entity_to_json};
@@ -85,21 +85,6 @@ impl Core {
                 Vehicle {},
             ));
 
-            // Add active slots if present
-            let mut active_slots = Vec::new();
-            for slot in &vehicle_data.active_slot {
-                let slot_type = SlotType::from_str(&slot.slot_type).map_err(|e| format!("Invalid slot type for vehicle {}: {}", vehicle_key, e))?;
-                active_slots.push(crate::modules::components::ActiveSlot {
-                    id: slot.id.clone(),
-                    slot_type,
-                    mount_point: slot.mount_point.clone(),
-                });
-            }
-            if !active_slots.is_empty() {
-                let active_slots_comp = ActiveSlots::new(active_slots);
-                self.world.insert_one(e, active_slots_comp).map_err(|e| format!("Failed to insert ActiveSlots component: {:?}", e))?;
-            }
-
             Ok(e)
         } else {
             Err(format!("Vehicle '{}' not found in descriptions", vehicle_key))
@@ -151,18 +136,24 @@ impl Core {
     }
 
     pub fn attach(&mut self, vehicle: Entity, item: Entity, slot_id: &str) -> Result<(), String> {
-        // Check if slot exists on vehicle
-        let has_slot = {
-            let query_result = self.world.query_one::<&ActiveSlots>(vehicle);
-            if let Ok(mut query) = query_result {
-                if let Some(active_slots) = query.get() {
-                    active_slots.slots.iter().any(|slot| slot.id == slot_id)
+        // Get vehicle type
+        let vehicle_type = {
+            if let Ok(mut query) = self.world.query_one::<&BaseType>(vehicle) {
+                if let Some(base_type) = query.get() {
+                    base_type.0.clone()
                 } else {
-                    false
+                    return Err("Vehicle has no BaseType component".to_string());
                 }
             } else {
-                false
+                return Err("Vehicle not found".to_string());
             }
+        };
+
+        // Check if slot exists in descriptions
+        let has_slot = if let Some(vehicle_desc) = self.descriptions.vehicles.get(&vehicle_type) {
+            vehicle_desc.active_slot.iter().any(|slot| slot.id == slot_id)
+        } else {
+            false
         };
 
         if has_slot {
@@ -175,7 +166,7 @@ impl Core {
                 Err("Entity is not an item".to_string())
             }
         } else {
-            Err(format!("Slot '{}' not found on vehicle", slot_id))
+            Err(format!("Slot '{}' not found on vehicle '{}'", slot_id, vehicle_type))
         }
     }
 

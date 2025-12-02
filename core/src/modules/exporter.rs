@@ -40,7 +40,7 @@ macro_rules! define_serialize_markers {
 }
 
 define_serialize_components! {
-    Guid, Pos, Force, EntityType, ActiveSlots, Health, Velocity, Rot, MaxSpeed, TargetPos, Reputation, TargetId, DamageType, BaseType
+    Guid, Pos, Force, EntityType, Health, Velocity, Rot, MaxSpeed, TargetPos, Reputation, TargetId, DamageType, BaseType, Owner
 }
 
 define_serialize_markers! {

@@ -17,6 +17,10 @@ fn main() {
     let vehicle_content = core.export_entity(vehicle, true);
     println!("Vehicle content:\n{}", vehicle_content);
 
+    // Экспорт item для проверки Owner
+    let item_content = core.export_entity(item, true);
+    println!("Item content:\n{}", item_content);
+
     // // Экспорт состояния мира для проверки
     // let s = core.export_world(true);
     // println!("Export world:\n{}", s);
