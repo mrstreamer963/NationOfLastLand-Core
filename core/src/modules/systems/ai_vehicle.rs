@@ -1,8 +1,6 @@
 use crate::modules::components::Pos;
-use crate::modules::components::{
-    EntityType, MaxSpeed, TargetId, Velocity, Guid, Target
-};
-use crate::modules::markers::{Vehicle, IsMoving, IsWaitingTarget, Stopped};
+use crate::modules::components::{MaxSpeed, TargetId, Velocity, Guid, Target};
+use crate::modules::markers::{IsMoving, IsWaitingTarget, Stopped, Trash, Vehicle};
 use crate::modules::setup::Spatial;
 use hecs::World;
 
@@ -52,10 +50,8 @@ fn move_vehicles(world: &mut World, spatial: &Spatial) {
 fn set_target_to_waiting_vehicles(world: &mut World) {
     // First, precompute all waste infos
     let mut trash_infos = Vec::new();
-    for (entity, (pos, unit_type, guid)) in world.query::<(&Pos, &EntityType, &Guid)>().iter() {
-        if *unit_type == EntityType::Trash { // TODO add Trash{} marker in future
-            trash_infos.push((entity, *guid, *pos));
-        }
+    for (entity, (pos, _trash, guid)) in world.query::<(&Pos, &Trash, &Guid)>().iter() {
+        trash_infos.push((entity, *guid, *pos));
     }
 
     // Then, collect all vehicle entities that are waiting for targets and their nearest waste
