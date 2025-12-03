@@ -1,14 +1,14 @@
 use crate::defines::MinMax;
 use crate::descriptions::{Descriptions, load_damage_types_static, load_items_static, load_vehicles_static};
-use crate::modules::components::{EntityType, Force, Guid, Pos, Rot, Velocity};
-use crate::modules::markers::{IsWaitingTarget, Vehicle};
+use crate::modules::components::{AttachedItems, BaseType, EntityType, Force, Guid, Health, MaxSpeed, Owner, Pos, Rot, Velocity, WeaponMode, WeaponType};
+use crate::modules::markers::{IsWaitingTarget, Vehicle, Item};
 
-use crate::modules::exporter::export_to_json;
+use crate::modules::exporter::{export_to_json, export_entity_to_json};
 use crate::modules::setup;
 use crate::modules::state::State;
 use crate::modules::systems::ai_vehicle::ai_vehicle_system;
 use crate::random_generator::RandomGenerator;
-use hecs::World;
+use hecs::{Entity, World};
 use std::error::Error;
 
 const DAMAGE_TYPES_YAML: &str = include_str!("../../data/damage_types.yml");
@@ -69,22 +69,52 @@ impl Core {
         Ok(())
     }
 
-    pub fn create_vehicle_from_yaml(&mut self, vehicle_key: &str, pos: Pos) -> Result<(), String> {
-        if let Some(vehicle_data) = self.descriptions.vehicles.get(vehicle_key) {
-            self.spawn_entity((
+    pub fn create_vehicle_from_yaml(&mut self, vehicle_key: &str, pos: Pos) -> Result<Entity, String> {
+        if let Some(vehicle_data_ref) = self.descriptions.vehicles.get(vehicle_key) {
+            let vehicle_data = vehicle_data_ref.clone();
+            let e = self.spawn_entity((
+                BaseType(vehicle_key.to_string()),
                 pos,
                 Rot { x: 0.0, y: 0.0 },
-                vehicle_data.max_speed,
+                MaxSpeed(vehicle_data.max_speed),
                 Velocity { x: 0.0, y: 0.0 },
-                vehicle_data.health,
+                Health { current: vehicle_data.max_health, max: vehicle_data.max_health },
                 Force(100.0),
                 IsWaitingTarget {},
                 EntityType::Vehicle,
                 Vehicle {},
             ));
-            Ok(())
+
+            Ok(e)
         } else {
             Err(format!("Vehicle '{}' not found in descriptions", vehicle_key))
+        }
+    }
+
+    pub fn create_item_from_yaml(&mut self, item_key: &str, _pos: Pos) -> Result<Entity, String> {
+        if let Some(item_data) = self.descriptions.items.get(item_key) {
+            let mut modes = Vec::new();
+            for interaction in &item_data.interactions {
+                for (dmg_type, dmg_value) in &interaction.action {
+                    modes.push(WeaponMode {
+                        damage_type: dmg_type.clone(),
+                        damage: *dmg_value as i32,
+                        range: 1.0,
+                    });
+                }
+            }
+            let e = self.spawn_entity((
+                BaseType(item_key.to_string()),
+                EntityType::Item,
+                Item {},
+            ));
+            if !modes.is_empty() {
+                let weapon_type = WeaponType { modes };
+                self.world.insert_one(e, weapon_type).unwrap();
+            }
+            Ok(e)
+        } else {
+            Err(format!("Item '{}' not found in descriptions", item_key))
         }
     }
 
@@ -106,8 +136,57 @@ impl Core {
         &mut self.descriptions
     }
 
-    pub fn export_world(&self) -> String {
-        export_to_json(&self.world, &self.s)
+    pub fn attach(&mut self, vehicle: Entity, item: Entity, slot_id: &str) -> Result<(), String> {
+        // Get vehicle type
+        let vehicle_type = {
+            if let Ok(mut query) = self.world.query_one::<&BaseType>(vehicle) {
+                if let Some(base_type) = query.get() {
+                    base_type.0.clone()
+                } else {
+                    return Err("Vehicle has no BaseType component".to_string());
+                }
+            } else {
+                return Err("Vehicle not found".to_string());
+            }
+        };
+
+        // Check if slot exists in descriptions
+        let has_slot = if let Some(vehicle_desc) = self.descriptions.vehicles.get(&vehicle_type) {
+            vehicle_desc.active_slot.iter().any(|slot| slot.id == slot_id)
+        } else {
+            false
+        };
+
+        if has_slot {
+            // Check if item is an item
+            if self.world.get::<&Item>(item).is_ok() {
+                // Insert Owner component to item
+                self.world.insert_one(item, Owner(vehicle)).map_err(|_| "Failed to insert Owner component".to_string())?;
+
+                // Add reference to item in vehicle's AttachedItems
+                self.world.insert_one(vehicle, AttachedItems::new()).map_err(|_| "Failed to insert AttachedItems component".to_string())?;
+                if let Ok(mut query) = self.world.query_one::<&mut AttachedItems>(vehicle) {
+                    let attached_items = query.get().unwrap();
+                    attached_items.attach(slot_id, item);
+                } else {
+                    return Err("Failed to query AttachedItems on vehicle".to_string());
+                }
+
+                Ok(())
+            } else {
+                Err("Entity is not an item".to_string())
+            }
+        } else {
+            Err(format!("Slot '{}' not found on vehicle '{}'", slot_id, vehicle_type))
+        }
+    }
+
+    pub fn export_world(&self, is_pretty: bool) -> String {
+        export_to_json(&self.world, &self.s, is_pretty)
+    }
+
+    pub fn export_entity(&self, entity: Entity, is_pretty: bool) -> String {
+        export_entity_to_json(&self.world, entity, is_pretty)
     }
 
     fn load(&mut self) -> Result<(), Box<dyn Error>> {

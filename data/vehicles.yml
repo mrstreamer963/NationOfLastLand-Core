@@ -1,9 +1,14 @@
 vehicles:
 - type: VEHICLE_CAR
   max_speed: 0.1
-  health:
-# позволяет сделать например BREAK_VEHICLE_CAR с параметром current: 1.0 
-    current: 5.0
-    max: 5.0
-  active_sloth:
-    - type: VEHICLE_SLOT
+  max_health: 5.0
+  active_slot:
+    - id: "front_left"
+      slot_type: "main"
+      mount_point: "turret_front_left"
+    - id: "front_rigth"
+      slot_type: "main"
+      mount_point: "turret_front_right"
+    - id: "roof"
+      slot_type: "auxiliary"
+      mount_point: "roof_mount"

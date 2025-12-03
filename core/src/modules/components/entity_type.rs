@@ -4,5 +4,6 @@ use serde::{Serialize, Deserialize};
 pub enum EntityType {
     Waste,
     Trash,
-    Vehicle
+    Vehicle,
+    Item
 }

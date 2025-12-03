@@ -63,7 +63,7 @@ CleanAttack: {
        power
 }
 
-Vehicle -> ActiveItemSloth
+Vehicle -> ActiveItemSlot
               <VehicleSlot_1, Option(Item)>
               <VehicleSlot_2, Option(Item)>
               <VehicleSlot_3, Option(Item)>
@@ -72,7 +72,10 @@ Vehicle -> ActiveItemSloth
            ]
 
 
-
+## по поводу автогенерации полей через макросы и derive -
+и еще раз - desctiption не конвертится напрямую в entity - в нем содержатся только макс/мин параметры, например max_health: 100,
+который при создании entity преобразуется в компонент Health { max: 100, min: 100 }
+ 
 ## по поводу автогенерации полей через макросы и derive -
 нейросетка нагенерила множество ужасного кода, но в итоге все сводилось к генерации дефолтного бандла и кучи ручных insert тех полей, которые
 в исходном отстутствовали - это pos, rot, speed, etc.... В итоге было принято решение создавать единый бандл на основе
@@ -92,3 +95,65 @@ Vehicle -> ActiveItemSloth
                 Vehicle {},
             ));
 ```
+
+## вот нейросетка подсказала организацию vehicle
+
+vehicle:
+  name: "Heavy Assault Walker"
+  weapon_slots:
+    - id: "main_left"
+      slot_type: "main"
+      mount_point: "left_arm"
+      allowed_weapons: ["plasma_cannon", "railgun"]
+    - id: "main_right"
+      slot_type: "main"
+      mount_point: "right_arm"
+      allowed_weapons: ["plasma_cannon", "flamethrower"]
+    - id: "aux_top"
+      slot_type: "auxiliary"
+      mount_point: "shoulder"
+      allowed_weapons: ["missile_pod", "sensor_dart"]
+
+## вот что насчет монтирования оружия:
+
+// Шаблон оружия из YAML
+#[derive(serde::Deserialize)]
+struct WeaponTemplate {
+    name: String,
+    damage: f32,
+    ammo_capacity: u32,
+}
+
+// При создании машины:
+let vehicle = world.spawn((Transform::default(), Health::new(100)));
+
+// Создаём оружие как отдельную сущность
+let weapon = world.spawn((
+    WeaponStats { damage: 25.0, fire_rate: 10.0 },
+    Ammo { current: 30, max: 30 },
+    MountedOn { parent: vehicle, slot: "main_left".to_string() },
+    Transform::default(), // будет обновляться относительно машины
+));
+
+// И связываем с машиной — либо через компонент на машине, либо через запрос по MountedOn
+world.insert_one(vehicle, WeaponMounts {
+    slots: [("main_left".to_string(), Some(weapon))].into(),
+});
+
+### отличие id от mount_point:
+
+Зачем нужен id?
+
+Это уникальный ключ внутри машины (или даже глобально, если нужно).
+Он позволяет однозначно ссылаться на слот:
+«Установить оружие в слот main_left»,
+«Слот aux_top повреждён»,
+«Сохранить, что в main_right стоит plasma_cannon_v2».
+Без id (или другого уникального поля) вы не сможете надёжно отличить два main-слота.
+
+Зачем нужен mount_point?
+
+Это данные для рендеринга и физики:
+— в 3D-движке (или даже в 2D) вы должны знать, в какой локальной позиции и повороте прикрепить оружие к модели машины.
+— точка выстрела, дульный огонь, эффекты повреждений — всё привязано к конкретной позиции на модели.
+Это не дублирует id, а дополняет его смыслом.
