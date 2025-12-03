@@ -19,9 +19,5 @@ fn main() {
 
     // Экспорт item для проверки Owner
     let item_content = core.export_entity(item, true);
-    println!("Item content:\n{}", item_content);
-
-    // // Экспорт состояния мира для проверки
-    // let s = core.export_world(true);
-    // println!("Export world:\n{}", s);
+    println!("Item content:\n{}", item_content);;
 }
