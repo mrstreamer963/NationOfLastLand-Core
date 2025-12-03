@@ -205,7 +205,5 @@ impl Core {
             .expect("Failed to create vehicle from YAML");
 
         self.create_trash().expect("Failed to create waste");
-
-        self.create_trash().expect("Failed to create waste");
     }
 }
