@@ -3,7 +3,7 @@ use serde::Serialize;
 use std::collections::HashMap;
 
 #[derive(Clone)]
-pub struct AttachedItems(HashMap<String, Entity>);
+pub struct AttachedItems(pub HashMap<String, Entity>);
 
 impl AttachedItems {
     pub fn new() -> Self {

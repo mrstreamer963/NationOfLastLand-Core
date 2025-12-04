@@ -1,7 +1,8 @@
 use crate::modules::components::Pos;
-use crate::modules::components::{MaxSpeed, TargetId, Velocity, Guid, Target, WeaponMode, AttachedItems, WeaponType};
+use crate::modules::components::{MaxSpeed, TargetId, Velocity, Guid, Target, WeaponMode, AttachedItems};
 use crate::modules::markers::{IsMoving, IsTargetNear, IsWaitingTarget, Trash, Vehicle};
 use crate::modules::setup::Spatial;
+use crate::world_utils::get_base_type;
 use hecs::{Entity, World};
 
 #[derive(Clone, Debug)]
@@ -107,19 +108,20 @@ fn attack_vehicles(world: &mut World) {
         .query::<(&IsTargetNear, &Vehicle, &Target, &AttachedItems)>()
         .iter()
     {
-        for slot in &active_slots.slots {
-            if let Some(item_entity) = attached_items.get(&slot.id) {
-                if let Ok(mut query) = world.query_one::<(&WeaponType,)>(item_entity) {
-                    if let Some((weapon_type,)) = query.get() {
-                        for mode in &weapon_type.modes {
-                            attack_vehicles.push(AttackEvent {
-                                weapon_mode: mode.clone(),
-                                target_unit: target.0,
-                            });
-                        }
-                    }
-                }
-            }
+        for (key, item_entity) in attached_items.0.iter() {
+            if let Ok(item_type) = get_base_type(world, *item_entity) {
+                println!("{}", item_type);
+            } 
+            // if let Ok(mut query) = world.query_one::<(&WeaponType,)>(*item_entity) {
+            //     if let Some((weapon_type,)) = query.get() {
+            //         for mode in &weapon_type.modes {
+            //             attack_vehicles.push(AttackEvent {
+            //                 weapon_mode: mode.clone(),
+            //                 target_unit: target.0,
+            //             });
+            //         }
+            //     }
+            // }
         }
         // entities_to_reset.push(entity);
         // targets_to_despawn.push(target.0);

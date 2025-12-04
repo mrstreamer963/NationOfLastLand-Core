@@ -2,6 +2,7 @@ use crate::defines::MinMax;
 use crate::descriptions::{Descriptions, load_damage_types_static, load_items_static, load_vehicles_static};
 use crate::modules::components::{AttachedItems, BaseType, EntityType, Force, Guid, Health, MaxSpeed, Owner, Pos, Rot, Velocity, WeaponMode, WeaponType};
 use crate::modules::markers::{IsWaitingTarget, Vehicle, Item};
+use crate::world_utils::get_base_type;
 
 use crate::modules::exporter::{export_to_json, export_entity_to_json};
 use crate::modules::setup;
@@ -138,17 +139,7 @@ impl Core {
 
     pub fn attach(&mut self, vehicle: Entity, item: Entity, slot_id: &str) -> Result<(), String> {
         // Get vehicle type
-        let vehicle_type = {
-            if let Ok(mut query) = self.world.query_one::<&BaseType>(vehicle) {
-                if let Some(base_type) = query.get() {
-                    base_type.0.clone()
-                } else {
-                    return Err("Vehicle has no BaseType component".to_string());
-                }
-            } else {
-                return Err("Vehicle not found".to_string());
-            }
-        };
+        let vehicle_type = get_base_type(&self.world, vehicle)?;
 
         // Check if slot exists in descriptions
         let has_slot = if let Some(vehicle_desc) = self.descriptions.vehicles.get(&vehicle_type) {
