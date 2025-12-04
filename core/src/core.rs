@@ -161,7 +161,7 @@ impl Core {
             // Check if item is an item
             if self.world.get::<&Item>(item).is_ok() {
                 // Insert Owner component to item
-                self.world.insert_one(item, Owner(vehicle)).map_err(|_| "Failed to insert Owner component".to_string())?;
+                self.world.insert_one(item, Owner(vehicle)).expect("Failed to insert Owner component");
 
                 if self.world.get::<&AttachedItems>(vehicle).is_err() {
                     self.world.insert_one(vehicle, AttachedItems::new()).unwrap();
