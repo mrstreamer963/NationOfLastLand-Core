@@ -11,7 +11,7 @@ hecs::serialize - реализовать, оказывается все уже �
 
 Health,
 
-Механика боя:
+## Уязвимости
 
 Лучше всего использовать трёхуровневую систему:
 Уязвимость (vulnerability > 1.0 )
@@ -21,56 +21,12 @@ Health,
 📌 Отсутствие записи ≠ иммунитет.
 По умолчанию — урон проходит полностью (множитель = 1.0). 
 
-pub enum DamageType {
-    Physical,   // можно разбить на Slash, Pierce и т.д.
-    Fire,
-    Ice,
-    Lightning,
-    Poison,
-    Holy,
-    Magic,
-}
-
-Unit -> WeaponSlot<SlotType, Weapon>
-
-Weapon -> attack 1
-       -> attack 2
-       -> attack 3
-
-Attack_XXX: 
-- distance
-- toxic_power
-
-
-Trash WeaponSlot<>
-
-
-Waste -> WeaponSlot<Top, WasteWeapon>
-                              WasteWeapon -> Attacks<WasteAttack>
-
-WasteAttack: {
-       type: AcidAttackType
-       distance,
-       power
-}
-
-Vehicle -> WeaponSlot<Top, CleanWeapon>
-                            CleanWeapon -> Attacks<CleanAttack>
-
-CleanAttack: {
-       type: CleanAttackType
-       distance,
-       power
-}
-
-Vehicle -> ActiveItemSlot
-              <VehicleSlot_1, Option(Item)>
-              <VehicleSlot_2, Option(Item)>
-              <VehicleSlot_3, Option(Item)>
-           BackPack[
-              Item, Item, Item
-           ]
-
+## Механика боя
+1. Создаем массив entity Attack( unit, targetUnit )
+2. Смотрим чем может атаковать unit - перебираем активные слоты в машине и смотрим какие могут атаковать и что в них лежит
+3. Создаем массив атак AttackEvent( WeaponMode, targetUnit )
+4. Обработка массива AttackEvent, распределение урона по юнитам
+5. Обработка повреждений на юнитах, удаление с hp = 0
 
 ## по поводу автогенерации полей через макросы и derive -
 и еще раз - desctiption не конвертится напрямую в entity - в нем содержатся только макс/мин параметры, например max_health: 100,
