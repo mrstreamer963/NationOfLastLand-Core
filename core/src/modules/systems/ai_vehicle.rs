@@ -1,3 +1,4 @@
+use crate::descriptions::{self, Descriptions};
 use crate::modules::components::Pos;
 use crate::modules::components::{MaxSpeed, TargetId, Velocity, Guid, Target, WeaponMode, AttachedItems};
 use crate::modules::markers::{IsMoving, IsTargetNear, IsWaitingTarget, Trash, Vehicle};
@@ -99,7 +100,7 @@ fn set_target_to_waiting_vehicles(world: &mut World) {
     }
 }
 
-fn attack_vehicles(world: &mut World) {
+fn attack_vehicles(world: &mut World, descriptions: &Descriptions) {
     let mut attack_vehicles: Vec<AttackEvent> = Vec::new();
 
     // let mut entities_to_reset = Vec::new();
@@ -108,9 +109,14 @@ fn attack_vehicles(world: &mut World) {
         .query::<(&IsTargetNear, &Vehicle, &Target, &AttachedItems)>()
         .iter()
     {
-        for (key, item_entity) in attached_items.0.iter() {
+        for (_key, item_entity) in attached_items.0.iter() {
             if let Ok(item_type) = get_base_type(world, *item_entity) {
-                println!("{}", item_type);
+                // println!("{}", item_type);
+                if let Some(base_item) = descriptions.items.get(&item_type) {
+                    for interaction in base_item.interactions.iter() {
+
+                    }
+                }
             }
 
             // if let Ok(mut query) = world.query_one::<(&WeaponType,)>(*item_entity) {
@@ -143,10 +149,10 @@ fn attack_vehicles(world: &mut World) {
 }
 
 /// System that processes vehicles waiting for targets, assigns nearest waste, and changes their state
-pub fn ai_vehicle_system(world: &mut World, spatial: &Spatial) {
+pub fn ai_vehicle_system(world: &mut World, spatial: &Spatial, descriptions: &Descriptions) {
     set_target_to_waiting_vehicles(world);
 
     move_vehicles(world, spatial);
 
-    attack_vehicles(world);
+    attack_vehicles(world, descriptions);
 }

@@ -71,8 +71,7 @@ impl Core {
     }
 
     pub fn create_vehicle_from_yaml(&mut self, vehicle_key: &str, pos: Pos) -> Result<Entity, String> {
-        if let Some(vehicle_data_ref) = self.descriptions.vehicles.get(vehicle_key) {
-            let vehicle_data = vehicle_data_ref.clone();
+        if let Some(vehicle_data) = self.descriptions.vehicles.get(vehicle_key) {
             let e = self.spawn_entity((
                 BaseType(vehicle_key.to_string()),
                 pos,
@@ -121,7 +120,7 @@ impl Core {
 
     pub fn update(&mut self, delta: f64) -> Result<(), String> {
         // Run AI system to process waiting vehicles and assign targets
-        ai_vehicle_system(&mut self.world, &self.setup.spatial);
+        ai_vehicle_system(&mut self.world, &self.setup.spatial, &self.descriptions);
 
         // Increment time
         self.s.time += delta;
