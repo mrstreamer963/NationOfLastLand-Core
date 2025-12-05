@@ -100,8 +100,8 @@ fn set_target_to_waiting_vehicles(world: &mut World) {
     }
 }
 
-fn attack_vehicles(world: &mut World, descriptions: &Descriptions) {
-    let mut attack_vehicles: Vec<AttackEvent> = Vec::new();
+pub fn attack_vehicles(world: &mut World, descriptions: &Descriptions) -> Vec<AttackEvent> {
+    let mut attack_events: Vec<AttackEvent> = Vec::new();
 
     for (_entity, (_, _, target, attached_items)) in world
         .query::<(&IsTargetNear, &Vehicle, &Target, &AttachedItems)>()
@@ -118,7 +118,7 @@ fn attack_vehicles(world: &mut World, descriptions: &Descriptions) {
                                 damage: *damage as i32,
                                 range: 0.0,
                             };
-                            attack_vehicles.push(AttackEvent {
+                            attack_events.push(AttackEvent {
                                 weapon_mode: w, target_unit: target.0 });
                         }
                     }
@@ -141,6 +141,8 @@ fn attack_vehicles(world: &mut World, descriptions: &Descriptions) {
     //     world.remove_one::<Target>(entity).unwrap();
     //     world.remove_one::<TargetId>(entity).unwrap();
     // }
+
+    attack_events
 }
 
 /// System that processes vehicles waiting for targets, assigns nearest waste, and changes their state

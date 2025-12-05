@@ -7,7 +7,7 @@ use crate::world_utils::get_base_type;
 use crate::modules::exporter::{export_to_json, export_entity_to_json};
 use crate::modules::setup;
 use crate::modules::state::State;
-use crate::modules::systems::ai_vehicle::ai_vehicle_system;
+use crate::modules::systems::ai_vehicle::{ai_vehicle_system, attack_vehicles, AttackEvent};
 use crate::random_generator::RandomGenerator;
 use hecs::{Entity, World};
 use std::error::Error;
@@ -176,6 +176,10 @@ impl Core {
 
     pub fn export_entity(&self, entity: Entity, is_pretty: bool) -> String {
         export_entity_to_json(&self.world, entity, is_pretty)
+    }
+
+    pub fn get_attack_events(&mut self) -> Vec<AttackEvent> {
+        attack_vehicles(&mut self.world, &self.descriptions)
     }
 
     fn load(&mut self) -> Result<(), Box<dyn Error>> {
