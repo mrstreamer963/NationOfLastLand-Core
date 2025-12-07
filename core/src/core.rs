@@ -2,6 +2,7 @@ use crate::defines::MinMax;
 use crate::descriptions::{Descriptions, load_damage_types_static, load_items_static, load_vehicles_static};
 use crate::modules::components::{AttachedItems, BaseType, EntityType, Force, Health, MaxSpeed, Owner, Pos, Rot, Velocity, WeaponMode, WeaponType};
 use crate::modules::markers::{IsWaitingTarget, Vehicle, Item};
+use crate::modules::systems::dead_remover::dead_remover_system;
 use crate::world_utils::{get_base_type, spawn_entity};
 
 use crate::modules::exporter::{export_to_json, export_entity_to_json};
@@ -110,6 +111,11 @@ impl Core {
     }
 
     pub fn update(&mut self, delta: f64) -> Result<(), String> {
+
+        dead_remover_system(&mut self.world);
+
+        // TODO проверять target на существование, если нет - переводить в isWaiting
+
         // Run AI system to process waiting vehicles and assign targets
         ai_vehicle_system(&mut self.world, &self.setup.spatial, &self.descriptions);
 
@@ -197,7 +203,7 @@ impl Core {
         // Attach item to vehicle
         self.attach(vehicle, item, "front_left").unwrap();
 
-        for _ in 0..1 {
+        for _ in 0..2 {
             self.create_trash().expect("Failed to create waste");
         }
     }
