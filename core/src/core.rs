@@ -8,6 +8,7 @@ use crate::modules::exporter::{export_to_json, export_entity_to_json};
 use crate::modules::setup;
 use crate::modules::state::State;
 use crate::modules::systems::ai_vehicle::{ai_vehicle_system};
+use crate::modules::systems::attack_processor::attack_process;
 use crate::random_generator::RandomGenerator;
 use hecs::{Entity, World};
 use std::error::Error;
@@ -111,6 +112,9 @@ impl Core {
     pub fn update(&mut self, delta: f64) -> Result<(), String> {
         // Run AI system to process waiting vehicles and assign targets
         ai_vehicle_system(&mut self.world, &self.setup.spatial, &self.descriptions);
+
+        // Process attack events and apply damage
+        attack_process(&mut self.world, &self.descriptions);
 
         // Increment time
         self.s.time += delta;
