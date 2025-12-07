@@ -184,8 +184,14 @@ impl Core {
 impl Core {
     fn init_world(&mut self) {
         // Создание vehicle на основе данных из YAML (VEHICLE_CAR)
-        self.create_vehicle_from_yaml("VEHICLE_CAR", Pos { x: 1.0, y: 1.0 })
+        let vehicle = self.create_vehicle_from_yaml("VEHICLE_CAR", Pos { x: 1.0, y: 1.0 })
             .expect("Failed to create vehicle from YAML");
+
+        // Create an item with interactions
+         let item = self.create_item_from_yaml("ITEM_CLEANER", Pos { x: 0.0, y: 0.0 }).unwrap();
+
+        // Attach item to vehicle
+        self.attach(vehicle, item, "front_left").unwrap();
 
         for _ in 0..1 {
             self.create_trash().expect("Failed to create waste");

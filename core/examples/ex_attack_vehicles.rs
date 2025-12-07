@@ -1,7 +1,7 @@
 use nation_of_last_land_core::Core;
 use nation_of_last_land_core::modules::components::Pos;
-use nation_of_last_land_core::modules::markers::{Alert, IsTargetNear, IsWaitingTarget, Vehicle};
-use hecs::Entity;
+use nation_of_last_land_core::modules::markers::{Alert, AttackEvent, IsTargetNear, IsWaitingTarget, Vehicle};
+
 
 fn main() {
     let mut core = Core::new();
@@ -23,17 +23,23 @@ fn main() {
         core.update(15.0).unwrap();
 
         let w = core.get_world();
-        println!("Vehicles positions:");
-        for (_entity, (pos, _vehicle, waiting, target_near)) in w.query::<(&Pos, &Vehicle, Option<&IsWaitingTarget>, 
-            Option<&IsTargetNear>)>().iter() {            
-            let waiting_str = if waiting.is_some() { "present" } else { "absent" };
-            let target_near = if target_near.is_some() { "present" } else { "absent" };
-            println!("  {:?}; IsWaitingTarget: {}, IsTargetNear: {}", pos, waiting_str, target_near);
-        }
 
-        println!("Alerts:");
-        for (entity, (pos, _alert)) in w.query::<(&Pos, &Alert)>().iter() {
-            println!("  Entity: {:?}; Pos: {:?}", entity, pos);
+        // println!("Vehicles positions:");
+        // for (_entity, (pos, _vehicle, waiting, target_near)) in w.query::<(&Pos, &Vehicle, Option<&IsWaitingTarget>, 
+        //     Option<&IsTargetNear>)>().iter() {            
+        //     let waiting_str = if waiting.is_some() { "present" } else { "absent" };
+        //     let target_near = if target_near.is_some() { "present" } else { "absent" };
+        //     println!("  {:?}; IsWaitingTarget: {}, IsTargetNear: {}", pos, waiting_str, target_near);
+        // }
+
+        // println!("Alerts:");
+        // for (entity, (pos, _alert)) in w.query::<(&Pos, &Alert)>().iter() {
+        //     println!("  Entity: {:?}; Pos: {:?}", entity, pos);
+        // }
+
+        println!("AttackEvents:");
+        for (entity, _attack_event) in w.query::<&AttackEvent>().iter() {
+            println!("  Entity: {:?}", entity);
         }
     }
 }

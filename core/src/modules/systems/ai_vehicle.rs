@@ -100,7 +100,7 @@ fn interaction_vehicles(world: &mut World, descriptions: &Descriptions) {
     for (_entity, (_, _, target, attached_items)) in world
         .query::<(&IsTargetNear, &Vehicle, &Target, &AttachedItems)>()
         .iter()
-    {
+    {        
         for (_key, item_entity) in attached_items.0.iter() {
             if let Ok(item_type) = get_base_type(world, *item_entity) {
                 // println!("{}", item_type);
@@ -112,6 +112,7 @@ fn interaction_vehicles(world: &mut World, descriptions: &Descriptions) {
                                 damage: *damage as i32,
                                 range: 0.0,
                             };
+                            println!("console log {:?}", target.0);
                             attack_events.push(Attack {
                                 weapon_mode: w, target_unit: target.0 });
                         }
