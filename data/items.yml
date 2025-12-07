@@ -6,7 +6,7 @@ items:
   takeable: ~
   interactions:
     - name: ATTACK_CLEAN
-      DMG_CLEAN: 10.0
+      DMG_CLEAN: 0.5
 - type: ITEM_BRUSH
   interactions:
     - name: ATTACK_CLEAN

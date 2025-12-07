@@ -204,7 +204,7 @@ impl Core {
         // Attach item to vehicle
         self.attach(vehicle, item, "front_left").unwrap();
 
-        for _ in 0..100 {
+        for _ in 0..1 {
             self.create_trash().expect("Failed to create waste");
         }
     }
