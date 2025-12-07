@@ -2,7 +2,7 @@ use crate::defines::MinMax;
 use crate::descriptions::{Descriptions, load_damage_types_static, load_items_static, load_vehicles_static};
 use crate::modules::components::{AttachedItems, BaseType, EntityType, Force, Health, MaxSpeed, Owner, Pos, Rot, Velocity, WeaponMode, WeaponType};
 use crate::modules::markers::{IsWaitingTarget, Vehicle, Item};
-use crate::world_utils::{AttackEvent, get_base_type, spawn_entity};
+use crate::world_utils::{AttackEventBundle, get_base_type, spawn_entity};
 
 use crate::modules::exporter::{export_to_json, export_entity_to_json};
 use crate::modules::setup;
@@ -172,7 +172,7 @@ impl Core {
         &mut self.world
     }
 
-    pub fn get_attack_events(&mut self) -> Vec<AttackEvent> {
+    pub fn get_attack_events(&mut self) -> Vec<AttackEventBundle> {
         interaction_vehicles(&mut self.world, &self.descriptions)
     }
 
