@@ -1,5 +1,5 @@
 use hecs::{World, Entity};
-use crate::modules::{components::{BaseType, Guid, Target, WeaponMode}, markers::AttackEvent};
+use crate::modules::{components::{BaseType, Guid, Target, WeaponMode}, markers::{AttackEvent, IsTargetNear, IsWaitingTarget}};
 
 #[derive(Clone, Debug)]
 pub struct Attack {
@@ -37,4 +37,10 @@ pub fn spawn_attack_event(world: &mut World, ev: Attack) -> Result<Entity, Strin
     ));
 
     Ok(e)
+}
+
+pub fn reset_target (world: &mut World, entity: Entity) {
+    world.remove_one::<Target>(entity).unwrap();
+    world.remove_one::<IsTargetNear>(entity).unwrap();
+    world.insert_one(entity, IsWaitingTarget {}).unwrap();
 }

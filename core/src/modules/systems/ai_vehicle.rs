@@ -1,9 +1,9 @@
 use crate::descriptions::Descriptions;
 use crate::modules::components::Pos;
-use crate::modules::components::{MaxSpeed, TargetId, Velocity, Guid, Target, WeaponMode, AttachedItems};
+use crate::modules::components::{MaxSpeed, Velocity, Guid, Target, WeaponMode, AttachedItems};
 use crate::modules::markers::{IsMoving, IsTargetNear, IsWaitingTarget, Trash, Vehicle};
 use crate::modules::setup::Spatial;
-use crate::world_utils::{Attack, get_base_type, spawn_attack_event};
+use crate::world_utils::{Attack, get_base_type, reset_target, spawn_attack_event};
 use hecs::World;
 
 fn move_vehicles(world: &mut World, spatial: &Spatial) {
@@ -57,7 +57,7 @@ fn set_target_to_waiting_vehicles(world: &mut World) {
     }
 
     // Then, collect all vehicle entities that are waiting for targets and their nearest waste
-    let mut waiting_entities: Vec<(hecs::Entity, TargetId, Target)> = Vec::new();
+    let mut waiting_entities: Vec<(hecs::Entity, Target)> = Vec::new();
 
     for (entity, (pos, _vehicle, _waiting)) in
         world.query::<(&Pos, &Vehicle, &IsWaitingTarget)>()
@@ -79,15 +79,12 @@ fn set_target_to_waiting_vehicles(world: &mut World) {
         }
         if let (Some(ng), Some(ne)) = (nearest_guid, nearest_entity) {
             // Assign target
-            let target_id = TargetId(ng);
             let target = Target(ne);
-            waiting_entities.push((entity, target_id, target));
+            waiting_entities.push((entity, target));
         }
     }
 
-    // Now add TargetId and Target components to the entities and change state
-    for (entity, target_id, target) in waiting_entities {
-        world.insert_one(entity, target_id).unwrap();
+    for (entity, target) in waiting_entities {
         world.insert_one(entity, target).unwrap();
         world.insert_one(entity, IsMoving {}).unwrap();
         world.remove_one::<IsWaitingTarget>(entity).unwrap();
@@ -96,12 +93,18 @@ fn set_target_to_waiting_vehicles(world: &mut World) {
 
 fn interaction_vehicles(world: &mut World, descriptions: &Descriptions) {
     let mut attack_events: Vec<Attack> = Vec::new();
+    let mut entities_to_reset = Vec::new();
 
-    for (_entity, (_, _, target, attached_items)) in world
+    for (entity, (_, _, target, _attached_items)) in world
         .query::<(&IsTargetNear, &Vehicle, &Target, &AttachedItems)>()
         .iter()
-    {        
-        for (_key, item_entity) in attached_items.0.iter() {
+    {
+        if !world.contains(target.0) {
+            entities_to_reset.push(entity);
+            continue;
+        }
+
+        for (_key, item_entity) in _attached_items.0.iter() {
             if let Ok(item_type) = get_base_type(world, *item_entity) {
                 // println!("{}", item_type);
                 if let Some(base_item) = descriptions.items.get(&item_type) {
@@ -120,6 +123,10 @@ fn interaction_vehicles(world: &mut World, descriptions: &Descriptions) {
                 }
             }
         }
+    }
+
+    for entity in entities_to_reset {
+        reset_target(world, entity);
     }
 
     for e in attack_events {
