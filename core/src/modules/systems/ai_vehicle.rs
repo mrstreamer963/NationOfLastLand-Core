@@ -3,7 +3,7 @@ use crate::modules::components::Pos;
 use crate::modules::components::{MaxSpeed, TargetId, Velocity, Guid, Target, WeaponMode, AttachedItems};
 use crate::modules::markers::{IsMoving, IsTargetNear, IsWaitingTarget, Trash, Vehicle};
 use crate::modules::setup::Spatial;
-use crate::world_utils::{AttackEvent, get_base_type};
+use crate::world_utils::{Attack, get_base_type, spawn_attack_event};
 use hecs::World;
 
 fn move_vehicles(world: &mut World, spatial: &Spatial) {
@@ -94,8 +94,8 @@ fn set_target_to_waiting_vehicles(world: &mut World) {
     }
 }
 
-pub fn interaction_vehicles(world: &mut World, descriptions: &Descriptions) -> Vec<AttackEvent> {
-    let mut attack_events: Vec<AttackEvent> = Vec::new();
+fn interaction_vehicles(world: &mut World, descriptions: &Descriptions) {
+    let mut attack_events: Vec<Attack> = Vec::new();
 
     for (_entity, (_, _, target, attached_items)) in world
         .query::<(&IsTargetNear, &Vehicle, &Target, &AttachedItems)>()
@@ -112,34 +112,18 @@ pub fn interaction_vehicles(world: &mut World, descriptions: &Descriptions) -> V
                                 damage: *damage as i32,
                                 range: 0.0,
                             };
-                            attack_events.push(AttackEvent {
+                            attack_events.push(Attack {
                                 weapon_mode: w, target_unit: target.0 });
                         }
                     }
                 }
             }
         }
-        // entities_to_reset.push(entity);
-        // targets_to_despawn.push(target.0);
     }
 
-    
-    // Despawn targets
-    // for target_entity in targets_to_despawn {
-    //     world.despawn(target_entity).unwrap();
-    // }
-
-    // world.spawn_batch(attack_events.iter());
-
-    // Reset vehicles to waiting state
-    // for entity in entities_to_reset {
-    //     world.insert_one(entity, IsWaitingTarget {}).unwrap();
-    //     world.remove_one::<IsTargetNear>(entity).unwrap();
-    //     world.remove_one::<Target>(entity).unwrap();
-    //     world.remove_one::<TargetId>(entity).unwrap();
-    // }
-
-    attack_events
+    for e in attack_events {
+        spawn_attack_event(world, e).expect("Can't insert attack event");
+    }
 }
 
 /// System that processes vehicles waiting for targets, assigns nearest waste, and changes their state

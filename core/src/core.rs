@@ -2,12 +2,12 @@ use crate::defines::MinMax;
 use crate::descriptions::{Descriptions, load_damage_types_static, load_items_static, load_vehicles_static};
 use crate::modules::components::{AttachedItems, BaseType, EntityType, Force, Health, MaxSpeed, Owner, Pos, Rot, Velocity, WeaponMode, WeaponType};
 use crate::modules::markers::{IsWaitingTarget, Vehicle, Item};
-use crate::world_utils::{AttackEventBundle, get_base_type, spawn_entity};
+use crate::world_utils::{get_base_type, spawn_entity};
 
 use crate::modules::exporter::{export_to_json, export_entity_to_json};
 use crate::modules::setup;
 use crate::modules::state::State;
-use crate::modules::systems::ai_vehicle::{ai_vehicle_system, interaction_vehicles};
+use crate::modules::systems::ai_vehicle::{ai_vehicle_system};
 use crate::random_generator::RandomGenerator;
 use hecs::{Entity, World};
 use std::error::Error;
@@ -170,10 +170,6 @@ impl Core {
 
     pub fn get_world(&mut self) -> &mut World {
         &mut self.world
-    }
-
-    pub fn get_attack_events(&mut self) -> Vec<AttackEventBundle> {
-        interaction_vehicles(&mut self.world, &self.descriptions)
     }
 
     fn load(&mut self) -> Result<(), Box<dyn Error>> {

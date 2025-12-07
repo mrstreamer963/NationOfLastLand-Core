@@ -1,8 +1,8 @@
 use hecs::{World, Entity};
-use crate::modules::{components::{BaseType, EntityType, Guid, WeaponMode}, markers::AttackEvent};
+use crate::modules::{components::{BaseType, Guid, Target, WeaponMode}, markers::AttackEvent};
 
 #[derive(Clone, Debug)]
-pub struct AttackEventBundle {
+pub struct Attack {
     pub weapon_mode: WeaponMode,
     pub target_unit: Entity,
 }
@@ -29,10 +29,11 @@ pub fn spawn_entity(
     entity
 }
 
-pub fn spawn_attack_event(world: &mut World, ev: AttackEventBundle) -> Result<Entity, String> {
+pub fn spawn_attack_event(world: &mut World, ev: Attack) -> Result<Entity, String> {
     let e = spawn_entity(world, (
         AttackEvent{},
-        WeaponMode(ev.weapon_mode),
+        Target(ev.target_unit),
+        ev.weapon_mode
     ));
 
     Ok(e)

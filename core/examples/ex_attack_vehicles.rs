@@ -34,12 +34,12 @@ fn main() {
         core.update(15.0).unwrap();
 
         // Get and display the results of attack_vehicles
-        let attack_events = core.get_attack_events();
+        // let attack_events = core.get_attack_events();
 
-        println!("  Attack Events Count: {}", attack_events.len());
-        for event in &attack_events {
-            println!("    Weapon Mode: {:?}", event.weapon_mode);
-            println!("    Target Entity: {:?}", event.target_unit);
-        }
+        // println!("  Attack Events Count: {}", attack_events.len());
+        // for event in &attack_events {
+        //     println!("    Weapon Mode: {:?}", event.weapon_mode);
+        //     println!("    Target Entity: {:?}", event.target_unit);
+        // }
     }
 }
