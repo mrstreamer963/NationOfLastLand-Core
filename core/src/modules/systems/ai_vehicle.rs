@@ -2,8 +2,6 @@ use crate::descriptions::Descriptions;
 use crate::modules::components::{Guid, Pos};
 use crate::modules::components::{Target, WeaponMode, AttachedItems};
 use crate::modules::markers::{IsMoving, IsTargetNear, IsWaitingTarget, Trash, Vehicle};
-use crate::modules::setup::Spatial;
-use crate::modules::systems::move_system::move_vehicles;
 use crate::world_utils::{Attack, get_base_type, reset_target, spawn_attack_event};
 use hecs::World;
 

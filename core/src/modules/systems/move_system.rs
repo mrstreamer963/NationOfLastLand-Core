@@ -4,7 +4,7 @@ use crate::modules::markers::{IsMoving, IsTargetNear};
 use crate::modules::setup::Spatial;
 use hecs::World;
 
-pub fn move_vehicles(world: &mut World, spatial: &Spatial) {
+pub fn do_move(world: &mut World, spatial: &Spatial) {
     let mut entities_to_stop = Vec::new();
 
     for (entity, (pos, target, velocity, max_speed, _)) in world
