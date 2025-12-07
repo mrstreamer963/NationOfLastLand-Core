@@ -12,18 +12,22 @@ pub fn attack_process(world: &mut World) {
         .collect();
 
     for (e, target, weapon_mode) in attack_events {
-        println!("attack_events...");
+        // println!("attack_events...");
         // Get the target's health and resistance
         let mut should_add_dead_marker = false;
         if let Ok(mut query) = world.query_one::<(&mut Health, Option<&Resistance>)>(target.0) {
             if let Some((health, resistance_opt)) = query.get() {
                 let mut damage = weapon_mode.damage as f32;
 
+                println!("base damage {}", damage);
+
                 // Apply resistance if present
                 if let Some(resistance) = resistance_opt {
                     let resistance_value = resistance.resistances.get(&weapon_mode.damage_type).unwrap_or(&0.0);
                     damage *= 1.0 - *resistance_value;
                 }
+
+                println!("damage {}", damage);
 
                 // Deal damage
                 health.current -= damage;
@@ -33,7 +37,6 @@ pub fn attack_process(world: &mut World) {
                     health.current = 0.0;
                 }
 
-                println!("damage {}", weapon_mode.damage);
                 println!("health {}", health.current);
 
                 // Check if dead
