@@ -13,6 +13,7 @@ pub fn attack_process(world: &mut World, _descriptions: &Descriptions) {
         .collect();
 
     for (e, target, weapon_mode) in attack_events {
+        println!("attack_events...");
         // Get the target's health and resistance
         if let Ok(mut query) = world.query_one::<(&mut Health, Option<&Resistance>)>(target.0) {
             if let Some((health, resistance_opt)) = query.get() {
@@ -31,6 +32,8 @@ pub fn attack_process(world: &mut World, _descriptions: &Descriptions) {
                 if health.current < 0.0 {
                     health.current = 0.0;
                 }
+
+                println!("health {}", health.current);
 
                 // Note: Entity removal or death handling can be added later if needed
             }
