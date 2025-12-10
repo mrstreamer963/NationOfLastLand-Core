@@ -5,7 +5,7 @@ use std::{collections::{HashMap, HashSet}, error::Error};
 /// Компонент для хранения базовых описаний различных юнитов, алертов и предметов
 #[derive(Debug, Default)]
 pub struct Descriptions {
-    /// Описания алертов, где ключ - тип алерта, значение - описание
+    /// Описания алертов, где ключ - тип алерта, значение - структура с данными алерта
     pub alerts: AlertsDescriptions,
     /// Предметы, где ключ - название предмета, значение - данные предмета
     pub items: HashMap<String, ItemYaml>,

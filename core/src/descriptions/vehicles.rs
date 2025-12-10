@@ -25,8 +25,8 @@ pub struct Slot {
 pub struct VehicleYaml {
     #[serde(rename = "type")]
     pub vehicle_type: String,
-    pub max_speed: f32,
-    pub max_health: f32,
+    pub max_speed: crate::defines::MinMax,
+    pub max_health: crate::defines::MinMax,
     #[serde(rename = "active_slot")]
     pub active_slot: Vec<Slot>,
 }

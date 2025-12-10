@@ -1,5 +1,9 @@
 use hecs::Entity;
-use serde::Serialize;
 
-#[derive(Clone, Copy, Serialize)]
-pub struct Owner(pub Entity);
+use crate::modules::components::Guid;
+
+#[derive(Clone, Copy, serde::Serialize, serde::Deserialize)]
+pub struct Owner{
+    pub e: Entity,
+    pub guid: Guid
+}

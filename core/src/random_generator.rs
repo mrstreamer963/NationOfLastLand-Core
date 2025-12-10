@@ -3,18 +3,23 @@ use rand::Rng;
 use crate::{
     defines::{MapSize, MinMax},
     modules::{
-        components::{EntityType, Health, Pos, Resistance},
+        components::{DamageType, EntityType, Health, Pos, Resistance, UnitName},
         markers::{Alert, Trash}
     },
 };
 
 pub struct RandomGenerator {
-    pub toxic_health: MinMax
+    pub toxic_health: MinMax,
+    pub trash_probability_threshold: f32,
 }
 
 pub fn generate_between(range: &MinMax) -> f32 {
     let mut rng = rand::thread_rng();
     rng.gen_range(range.min..=range.max)
+}
+
+pub fn generate_probability() -> f32 {
+    rand::random()
 }
 
 pub fn generate_random_pos(map_size: &MapSize) -> Pos {
@@ -36,14 +41,22 @@ impl RandomGenerator {
     pub fn get_bundle_trash(&self, pos: Pos) -> (Pos, Health, EntityType, Alert, Trash, Resistance) {
         let health = generate_between(&self.toxic_health);
         let mut resistance = Resistance::default();
-        resistance.resistances.insert("Physical".to_string(), 0.0);
-        (pos, Health { current: health, max: health }, EntityType::Trash, Alert {}, Trash {}, resistance)
+        resistance.resistances.insert(DamageType::Physical, 0.0);
+        (pos, Health { current: health, max: health, cup: MinMax { max: health, min: health } }, EntityType::Trash, Alert {}, Trash {}, resistance)
     }
 
     pub fn get_bundle_waste(&self, pos: Pos) -> (Pos, Health, EntityType, Alert, Resistance) {
         let health = generate_between(&self.toxic_health);
         let mut resistance = Resistance::default();
-        resistance.resistances.insert("Physical".to_string(), 0.0);
-        (pos, Health { current: health, max: health }, EntityType::Waste, Alert {}, resistance)
+        resistance.resistances.insert(DamageType::Physical, 0.0);
+        (pos, Health { current: health, max: health, cup: MinMax { max: health, min: health } }, EntityType::Waste, Alert {}, resistance)
+    }
+
+    pub fn generate_unit_name(&self) -> UnitName {
+        let mut rng = rand::thread_rng();
+        let letter1 = (b'A' + rng.gen_range(0..26)) as char;
+        let letter2 = (b'A' + rng.gen_range(0..26)) as char;
+        let numbers: u32 = rng.gen_range(0..1000);
+        UnitName(format!("{letter1}{letter2}-{:03}", numbers))
     }
 }

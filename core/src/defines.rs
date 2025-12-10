@@ -1,4 +1,4 @@
-use serde::Serialize;
+use serde::{Serialize, Deserialize, Deserializer};
 
 #[derive(Serialize, Clone, Copy)]
 pub struct MapSize {
@@ -6,8 +6,18 @@ pub struct MapSize {
     pub height: i32,
 }
 
-#[derive(Serialize, Clone, Copy)]
+#[derive(Serialize, Debug, Clone, Copy)]
 pub struct MinMax {
-    pub max: f32,
     pub min: f32,
+    pub max: f32,
+}
+
+impl<'de> Deserialize<'de> for MinMax {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        let arr: [f32; 2] = Deserialize::deserialize(deserializer)?;
+        Ok(MinMax { min: arr[0], max: arr[1] })
+    }
 }

@@ -15,7 +15,7 @@ pub fn attack_process(world: &mut World) {
         // println!("attack_events...");
         // Get the target's health and resistance
         let mut should_add_dead_marker = false;
-        if let Ok(mut query) = world.query_one::<(&mut Health, Option<&Resistance>)>(target.0) {
+        if let Ok(mut query) = world.query_one::<(&mut Health, Option<&Resistance>)>(target.e) {
             if let Some((health, resistance_opt)) = query.get() {
                 let mut damage = weapon_mode.damage;
 
@@ -48,7 +48,7 @@ pub fn attack_process(world: &mut World) {
 
         // Add IsDead marker if health reached zero
         if should_add_dead_marker {
-            world.insert_one(target.0, IsDead {}).unwrap();
+            world.insert_one(target.e, IsDead {}).unwrap();
         }
 
         // Remove the attack event entity after processing

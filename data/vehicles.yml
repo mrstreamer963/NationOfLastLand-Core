@@ -1,7 +1,7 @@
 vehicles:
 - type: VEHICLE_CAR
-  max_speed: 0.1
-  max_health: 5.0
+  max_speed: [0.1, 0.5]
+  max_health: [5.0, 20.0]
   active_slot:
     - id: "front_left"
       slot_type: "main"

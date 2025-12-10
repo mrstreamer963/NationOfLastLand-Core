@@ -13,6 +13,22 @@ fn main() {
         println!("  {}. {}", index + 1, damage_type);
     }
 
+    // Вывод алертов
+    println!("\nAlerts:");
+    for (name, alert) in &descriptions.alerts {
+        println!("  {}:", name);
+        println!("    reputation: {}", alert.reputation);
+        if let Some(interactions) = &alert.interactions {
+            println!("    interactions:");
+            for interaction in interactions {
+                println!("      {}:", interaction.name);
+                for (effect, value) in &interaction.effects {
+                    println!("        {}: {}", effect, value);
+                }
+            }
+        }
+    }
+
     // Вывод предметов
     println!("\nItems:");
     for (name, item) in &descriptions.items {
@@ -36,8 +52,8 @@ fn main() {
     println!("\nVehicles:");
     for (name, vehicle) in &descriptions.vehicles {
         println!("  {}:", name);
-        println!("    max_speed: {}", vehicle.max_speed);
-        println!("    max_health: {}", vehicle.max_health);
+        println!("    max_speed: {:?}", vehicle.max_speed);
+        println!("    max_health: {:?}", vehicle.max_health);
         if !vehicle.active_slot.is_empty() {
             println!("    active_slot:");
             for slot in &vehicle.active_slot {

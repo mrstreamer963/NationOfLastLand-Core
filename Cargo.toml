@@ -2,13 +2,10 @@
 resolver = "3"
 members = [
     "core",
-    "interface-native",
-    "interface-wasm",
     "example-wasm"
 ]
 
 [workspace.dependencies]
-hecs-macros = "0.10.0"
 hecs = { version = "0.10.5", features = ["row-serialize"] }
 rand = "0.8"
 serde = { version = "1.0", features = ["derive"] }

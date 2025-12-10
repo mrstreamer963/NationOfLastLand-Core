@@ -47,27 +47,90 @@
             border-radius: 3px;
             min-height: 100px;
         }
+        /* Tab styles */
+        .tab-container {
+            margin: 20px 0;
+        }
+        .tab-buttons {
+            display: flex;
+            border-bottom: 1px solid #ccc;
+        }
+        .tab-button {
+            background: none;
+            border: none;
+            padding: 10px 20px;
+            color: #007bff;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+        }
+        .tab-button.active {
+            border-bottom-color: #007bff;
+            background: #f0f0f0;
+        }
+        .tab-content {
+            display: none;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-top: none;
+            border-radius: 0 0 5px 5px;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .machine-list {
+            list-style: none;
+            padding: 0;
+        }
+        .machine-item {
+            margin: 10px 0;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+        }
+        .machine-title {
+            font-weight: bold;
+            color: #007bff;
+        }
+        .machine-params {
+            margin-left: 10px;
+        }
+        .param {
+            margin: 2px 0;
+        }
     </style>
 </head>
 <body>
     <h1>Example WASM Module</h1>
 
-    <div class="container">
-        <h2>Core Info</h2>
-        <button onclick="showCoreInfo()">Get Core Info</button>
-    </div>
-
-    <div class="container">
-        <h2>Async Example</h2>
-        <button onclick="runAsyncExample()">Run Async</button>
-    </div>
-
-    <div class="container">
-        <h2>Pixi.js Rendering</h2>
-        <button onclick="initRender()">Init World</button>
-        <button onclick="startAnimation()" id="startBtn">Start Animation</button>
-        <button onclick="stopAnimation()" id="stopBtn" disabled>Stop Animation</button>
-        <div id="canvasContainer"></div>
+    <!-- Tab Container -->
+    <div class="tab-container">
+        <div class="tab-buttons">
+            <button class="tab-button active" onclick="showTab('render')">Rendering</button>
+            <button class="tab-button" onclick="showTab('machines')">Machines Params</button>
+            <button class="tab-button" onclick="showTab('core')">Core Info</button>
+            <button class="tab-button" onclick="showTab('async')">Async Example</button>
+        </div>
+        <div id="render-tab" class="tab-content active">
+            <h2>Pixi.js Rendering</h2>
+            <button onclick="initRender()">Init World</button>
+            <button onclick="startAnimation()" id="startBtn">Start Animation</button>
+            <button onclick="stopAnimation()" id="stopBtn" disabled>Stop Animation</button>
+            <button onclick="singleAnimate()">Single Animate</button>
+            <div id="canvasContainer"></div>
+        </div>
+        <div id="machines-tab" class="tab-content">
+            <h2>Machines Parameters</h2>
+            <button onclick="updateMachinesParams()" style="display: none;">Update Params</button>
+            <ul id="machines-list" class="machine-list"></ul>
+        </div>
+        <div id="core-tab" class="tab-content">
+            <h2>Core Info</h2>
+            <button onclick="showCoreInfo()">Get Core Info</button>
+        </div>
+        <div id="async-tab" class="tab-content">
+            <h2>Async Example</h2>
+            <button onclick="runAsyncExample()">Run Async</button>
+        </div>
     </div>
 
     <div id="output">
@@ -90,9 +153,30 @@
             log('WASM module loaded successfully!');
         }
 
+        window.showTab = function(tabName) {
+            // Hide all tabs
+            const tabs = document.querySelectorAll('.tab-content');
+            tabs.forEach(tab => tab.classList.remove('active'));
+            // Show selected tab
+            document.getElementById(tabName + '-tab').classList.add('active');
+            // Update button styles
+            const buttons = document.querySelectorAll('.tab-button');
+            buttons.forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+        };
+
         window.showCoreInfo = function() {
             const info = get_core_info();
-            log(`Core Info: ${info}`);
+            const worldDataJson = get_world_data();
+            let worldData;
+            try {
+                worldData = JSON.parse(worldDataJson);
+                const reputation = worldData.state && worldData.state.reputation && typeof worldData.state.reputation.value === 'number' ? worldData.state.reputation.value.toFixed(2) : 'N/A';
+                log(`Core Info: ${info}. Reputation: ${reputation}`);
+            } catch (error) {
+                console.error('JSON parse error:', error);
+                log(`Core Info: ${info}. Reputation: Error parsing data`);
+            }
         };
 
         window.runAsyncExample = async function() {
@@ -137,7 +221,7 @@
 
             // Get world data from WASM
             const worldDataJson = get_world_data();
-            console.log('worldDataJson:', worldDataJson);
+            // console.log('worldDataJson:', worldDataJson);
 
             let worldData;
             try {
@@ -148,9 +232,12 @@
                 return;
             }
 
-            // Display time
+            // Display time and reputation
             if (worldData.state && worldData.state.time !== undefined) {
                 ctx.fillText(`Time: ${worldData.state.time.toFixed(2)}`, 10, 50);
+            }
+            if (worldData.state && worldData.state.reputation && typeof worldData.state.reputation.value === 'number') {
+                ctx.fillText(`Reputation: ${worldData.state.reputation.value.toFixed(2)}`, 10, 70);
             }
 
             // Scale factor for positions
@@ -159,9 +246,9 @@
             // Draw units based on type
             if (worldData.units && Array.isArray(worldData.units)) {
                 worldData.units.forEach((unit, index) => {
-                    console.log(`Drawing unit ${index} at pos:`, unit.Pos, 'type:', unit.EntityType);
+                    // console.log(`Drawing unit ${index} at pos:`, unit.Pos, 'type:', unit.EntityType);
                     if (!unit.Pos || typeof unit.Pos.x !== 'number' || typeof unit.Pos.y !== 'number') {
-                        console.log(`Skipping unit ${index} due to invalid position data`);
+                        // console.log(`Skipping unit ${index} due to invalid position data`);
                         return;
                     }
                     const x = unit.Pos.x * scale;
@@ -173,20 +260,56 @@
                         ctx.fill();
                         ctx.strokeStyle = 'black';
                         ctx.stroke();
-                        console.log(`Vehicle drawn at: ${x}, ${y}`);
+                        // console.log(`Vehicle drawn at: ${x}, ${y}`);
                     } else if (unit.EntityType === 'Waste' || unit.EntityType === 'Trash') {
                         ctx.fillStyle = 'red';
                         ctx.fillRect(x, y, 20, 20);
                         ctx.strokeStyle = 'black';
                         ctx.lineWidth = 1;
                         ctx.strokeRect(x, y, 20, 20);
-                        console.log(`Waste drawn at: ${x}, ${y}`);
+                        // console.log(`Waste drawn at: ${x}, ${y}`);
                     }
                 });
             }
 
             console.log('Drawing completed');
         }
+
+        window.updateMachinesParams = function() {
+            const worldDataJson = get_world_data();
+            let worldData;
+            try {
+                worldData = JSON.parse(worldDataJson);
+            } catch (error) {
+                console.error('JSON parse error:', error);
+                return;
+            }
+            const machinesList = document.getElementById('machines-list');
+            machinesList.innerHTML = '';
+
+            if (worldData.units && Array.isArray(worldData.units)) {
+                let vehicles = worldData.units.filter(unit => unit.EntityType === 'Vehicle');
+                vehicles.sort((a, b) => {
+                    const nameA = a.UnitName || '';
+                    const nameB = b.UnitName || '';
+                    return nameA.localeCompare(nameB);
+                });
+                vehicles.forEach((unit) => {
+                    const li = document.createElement('li');
+                    li.className = 'machine-item';
+                    li.innerHTML = `
+                        <div class="machine-title">${unit.UnitName}</div>
+                        <div class="machine-params">
+                            <div class="param"><strong>Position:</strong> (${unit.Pos && typeof unit.Pos.x === 'number' ? unit.Pos.x.toFixed(2) : 'N/A'}, ${unit.Pos && typeof unit.Pos.y === 'number' ? unit.Pos.y.toFixed(2) : 'N/A'})</div>
+                            <div class="param"><strong>Health:</strong> ${unit.Health && typeof unit.Health.current === 'number' ? `${unit.Health.current.toFixed(1)} / ${unit.Health.max.toFixed(1)}` : 'N/A'}</div>
+                            <div class="param"><strong>Velocity:</strong> ${unit.Velocity && typeof unit.Velocity.x === 'number' ? `(${unit.Velocity.x.toFixed(2)}, ${unit.Velocity.y.toFixed(2)})` : 'N/A'}</div>
+                            <div class="param"><strong>Max Speed:</strong> ${unit.MaxSpeed && typeof unit.MaxSpeed.min === 'number' && typeof unit.MaxSpeed.max === 'number' ? `${unit.MaxSpeed.min.toFixed(2)} / ${unit.MaxSpeed.max.toFixed(2)}` : 'N/A'}</div>
+                        </div>
+                    `;
+                    machinesList.appendChild(li);
+                });
+            }
+        };
 
         function animate(currentTime) {
             if (!isRunning) return;
@@ -199,6 +322,11 @@
 
             // Redraw
             draw();
+
+            // Update machines params if on machines tab
+            if (document.getElementById('machines-tab').classList.contains('active')) {
+                updateMachinesParams();
+            }
 
             // Schedule next frame
             animationFrame = requestAnimationFrame(animate);
@@ -230,6 +358,16 @@
             document.getElementById('stopBtn').disabled = true;
 
             log('Animation stopped');
+        };
+
+        window.singleAnimate = function() {
+            update_world(16); // typical frame time for 60fps
+            draw();
+            // Update machines params if on machines tab
+            if (document.getElementById('machines-tab').classList.contains('active')) {
+                updateMachinesParams();
+            }
+            log('Single animate step executed');
         };
 
         function log(message) {

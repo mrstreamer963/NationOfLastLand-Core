@@ -1,18 +1,19 @@
 use crate::defines::MinMax;
 use crate::descriptions::{Descriptions, load_alerts_static, load_damage_types_static, load_items_static, load_vehicles_static};
-use crate::modules::components::{AttachedItems, Owner, Pos};
+use crate::exporter::{export_entity_to_json, export_to_json};
+use crate::modules::components::{AttachedItems, Guid, Owner, Pos};
 use crate::modules::markers::Item;
 use crate::modules::systems::dead_remover::do_remove_dead;
-use crate::modules::systems::move_system::do_move;
-use crate::world_utils::{get_base_type, spawn_entity};
+use crate::modules::systems::interaction_system::do_interaction;
+use crate::modules::systems::move_system::{do_move, set_speed_by_target};
+use crate::world_utils::get_base_type;
 
-use crate::modules::exporter::{export_to_json, export_entity_to_json};
 use crate::modules::setup;
 use crate::modules::state::State;
 use crate::modules::systems::ai_vehicle::{ai_vehicle_system};
 use crate::modules::systems::attack_processor::attack_process;
 use crate::random_generator::RandomGenerator;
-use crate::spawner::{create_item_from_description, create_vehicle_from_description};
+use crate::spawner::{create_alert_from_description, create_item_from_description, create_vehicle_from_description};
 use hecs::{Entity, World};
 use std::error::Error;
 
@@ -42,6 +43,7 @@ impl Core {
         let setup = setup::new();
         let r = RandomGenerator {
             toxic_health: MinMax { max: 5.0, min: 1.0 },
+            trash_probability_threshold: 0.9,
         };
         let descriptions = Descriptions::default();
 
@@ -59,16 +61,15 @@ impl Core {
         c
     }
 
-    pub fn create_trash(&mut self) -> Result<(), String> {
+    pub fn create_trash(&mut self) -> Result<Entity, String> {
         use crate::random_generator::generate_random_pos;
         let pos = generate_random_pos(&self.setup.spatial.map_size);
-        let bundle = self.r.get_bundle_trash(pos);
-        spawn_entity(&mut self.world, bundle);
-        Ok(())
+
+        create_alert_from_description(&mut self.world, &self.descriptions, "ALERT_TRASH", pos, &self.r)
     }
 
     pub fn create_vehicle(&mut self, vehicle_key: &str, pos: Pos) -> Result<Entity, String> {
-        create_vehicle_from_description(&mut self.world, &self.descriptions, vehicle_key, pos)
+        create_vehicle_from_description(&mut self.world, &self.descriptions, vehicle_key, pos, &self.r)
     }
 
     pub fn create_item(&mut self, item_key: &str, pos: Pos) -> Result<Entity, String> {
@@ -77,16 +78,22 @@ impl Core {
 
     pub fn update(&mut self, delta: f64) -> Result<(), String> {
 
-        do_remove_dead(&mut self.world);
+        do_remove_dead(&mut self.world, &mut self.s);
 
-        do_move(&mut self.world, &self.setup.spatial);
-
-        // Run AI system to process waiting vehicles and assign targets
-        ai_vehicle_system(&mut self.world, &self.descriptions);
-
-        // Process attack events and apply damage
+        do_interaction(&mut self.world, &self.descriptions);
         attack_process(&mut self.world);
 
+        // Generate trash with probability > trash_probability_threshold
+        if crate::random_generator::generate_probability() > self.r.trash_probability_threshold {
+            self.create_trash()?;
+        }
+
+        // Run AI system to process waiting vehicles and assign targets
+        ai_vehicle_system(&mut self.world);
+
+        set_speed_by_target(&mut self.world, &self.setup.spatial);
+        do_move(&mut self.world, &self.setup.spatial);
+        
         // Increment time
         self.s.time += delta;
 
@@ -115,8 +122,10 @@ impl Core {
         if has_slot {
             // Check if item is an item
             if self.world.get::<&Item>(item).is_ok() {
+                // Get vehicle guid
+                let vehicle_guid = *self.world.get::<&Guid>(vehicle).map_err(|_| "Vehicle has no Guid")?;
                 // Insert Owner component to item
-                self.world.insert_one(item, Owner(vehicle)).expect("Failed to insert Owner component");
+                self.world.insert_one(item, Owner { e: vehicle, guid: vehicle_guid }).expect("Failed to insert Owner component");
 
                 if self.world.get::<&AttachedItems>(vehicle).is_err() {
                     self.world.insert_one(vehicle, AttachedItems::new()).unwrap();
@@ -161,17 +170,13 @@ impl Core {
 impl Core {
     fn init_world(&mut self) {
         // Создание vehicle на основе данных из YAML (VEHICLE_CAR)
-        let vehicle = self.create_vehicle("VEHICLE_CAR", Pos { x: 1.0, y: 1.0 })
+
+    for _ in 0..5 {
+        let vehicle = self.create_vehicle("VEHICLE_CAR", Pos { x: 5.0, y: 5.0 })
             .expect("Failed to create vehicle from YAML");
-
-        // Create an item with interactions
-         let item = self.create_item("ITEM_CLEANER", Pos { x: 0.0, y: 0.0 }).unwrap();
-
-        // Attach item to vehicle
+            // Create an item with interactions
+        let item = self.create_item("ITEM_CLEANER", Pos { x: 5.0, y: 5.0 }).unwrap();
         self.attach_to_vehicle(vehicle, item, "front_left").unwrap();
-
-        for _ in 0..2 {
-            self.create_trash().expect("Failed to create waste");
-        }
+    }
     }
 }

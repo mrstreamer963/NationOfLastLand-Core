@@ -12,10 +12,10 @@ pub fn get_base_type(world: &World, entity: Entity) -> Result<String, String> {
         if let Some(base_type) = query.get() {
             Ok(base_type.0.clone())
         } else {
-            Err("Vehicle has no BaseType component".to_string())
+            Err("Entity has no BaseType component".to_string())
         }
     } else {
-        Err("Vehicle not found".to_string())
+        Err("Entity not found".to_string())
     }
 }
 
@@ -30,9 +30,10 @@ pub fn spawn_entity(
 }
 
 pub fn spawn_attack_event(world: &mut World, ev: Attack) -> Result<Entity, String> {
+    let guid = world.query_one::<&Guid>(ev.target_unit).unwrap().get().unwrap().clone();
     let e = spawn_entity(world, (
         AttackEvent{},
-        Target(ev.target_unit),
+        Target { e: ev.target_unit, guid },
         ev.weapon_mode
     ));
 
@@ -44,4 +45,3 @@ pub fn reset_target (world: &mut World, entity: Entity) {
     world.remove_one::<IsTargetNear>(entity).unwrap();
     world.insert_one(entity, IsWaitingTarget {}).unwrap();
 }
-

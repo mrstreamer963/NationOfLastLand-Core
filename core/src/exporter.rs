@@ -40,11 +40,12 @@ macro_rules! define_serialize_markers {
 }
 
 define_serialize_components! {
-    Guid, Pos, Force, EntityType, Health, Velocity, Rot, MaxSpeed, Trash, TargetPos, Reputation, TargetId, DamageType, BaseType, Owner, AttachedItems
+    Guid, Pos, EntityType, Health, Target, Velocity, Rot, Trash, Reputation, DamageType, BaseType, MaxSpeed, Owner, AttachedItems,
+    UnitName
 }
 
 define_serialize_markers! {
-    Alert, Vehicle, IsMoving, IsWaitingTarget, Stopped
+    Alert, Vehicle, IsMoving, IsWaitingTarget
 }
 
 struct ExportData {
