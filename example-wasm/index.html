@@ -116,6 +116,12 @@
             <button onclick="startAnimation()" id="startBtn">Start Animation</button>
             <button onclick="stopAnimation()" id="stopBtn" disabled>Stop Animation</button>
             <button onclick="singleAnimate()">Single Animate</button>
+            <div style="margin: 10px 0;">
+                <input type="text" id="vehicleType" placeholder="VEHICLE_CAR" value="VEHICLE_CAR" style="margin-right: 10px;">
+                <input type="number" id="vehicleX" placeholder="X" value="5.0" step="0.1" style="width: 80px; margin-right: 10px;">
+                <input type="number" id="vehicleY" placeholder="Y" value="5.0" step="0.1" style="width: 80px; margin-right: 10px;">
+                <button onclick="createMachine()">Create Machine</button>
+            </div>
             <div id="canvasContainer"></div>
         </div>
         <div id="machines-tab" class="tab-content">
@@ -139,7 +145,7 @@
     </div>
 
     <script type="module">
-        import init, { get_core_info, async_example, get_world_data, update_world } from './pkg/example_wasm.js';
+        import init, { get_core_info, async_example, get_world_data, update_world, create_vehicle } from './pkg/example_wasm.js';
 
         let pixiApp = null;
         let animationFrame = null;
@@ -171,7 +177,7 @@
             let worldData;
             try {
                 worldData = JSON.parse(worldDataJson);
-                const reputation = worldData.state && worldData.state.reputation && typeof worldData.state.reputation.value === 'number' ? worldData.state.reputation.value.toFixed(2) : 'N/A';
+                const reputation = worldData.state && typeof worldData.state.reputation === 'number' ? worldData.state.reputation.toFixed(2) : 'N/A';
                 log(`Core Info: ${info}. Reputation: ${reputation}`);
             } catch (error) {
                 console.error('JSON parse error:', error);
@@ -236,8 +242,8 @@
             if (worldData.state && worldData.state.time !== undefined) {
                 ctx.fillText(`Time: ${worldData.state.time.toFixed(2)}`, 10, 50);
             }
-            if (worldData.state && worldData.state.reputation && typeof worldData.state.reputation.value === 'number') {
-                ctx.fillText(`Reputation: ${worldData.state.reputation.value.toFixed(2)}`, 10, 70);
+            if (worldData.state && typeof worldData.state.reputation === 'number') {
+                ctx.fillText(`Reputation: ${worldData.state.reputation.toFixed(2)}`, 10, 70);
             }
 
             // Scale factor for positions
@@ -368,6 +374,20 @@
                 updateMachinesParams();
             }
             log('Single animate step executed');
+        };
+
+        window.createMachine = function() {
+            const vehicleType = document.getElementById('vehicleType').value;
+            const x = parseFloat(document.getElementById('vehicleX').value);
+            const y = parseFloat(document.getElementById('vehicleY').value);
+            try {
+                const result = create_vehicle(vehicleType, x, y);
+                log(result);
+                // Redraw after creating
+                draw();
+            } catch (error) {
+                log(`Error creating vehicle: ${error}`);
+            }
         };
 
         function log(message) {

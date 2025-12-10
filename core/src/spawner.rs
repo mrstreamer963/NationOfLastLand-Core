@@ -1,6 +1,6 @@
 use crate::descriptions::Descriptions;
 use crate::descriptions::alerts::AlertYaml;
-use crate::modules::components::{BaseType, EntityType, Force, Health, MaxSpeed, Pos, Reputation, Rot, Velocity};
+use crate::modules::components::{BaseType, EntityType, Force, Health, MaxSpeed, Pos, Reputation, ReputationCost, Rot, Velocity};
 use crate::modules::markers::{IsWaitingTarget, Vehicle, Item};
 use crate::random_generator::RandomGenerator;
 use crate::world_utils::spawn_entity;
@@ -21,6 +21,8 @@ pub fn create_vehicle_from_description(world: &mut World, descriptions: &Descrip
             EntityType::Vehicle,
             Vehicle {},
             unit_name,
+            Reputation(vehicle_data.reputation_cost_destroy),
+            ReputationCost(vehicle_data.reputation_cost)
         ));
 
         Ok(e)
@@ -59,13 +61,13 @@ pub fn create_alert_from_description(world: &mut World, descriptions: &Descripti
 fn create_trash(world: &mut World, pos: Pos, r: &RandomGenerator, description: &AlertYaml) -> Entity {
     let bundle = r.get_bundle_trash(pos);
     let e = spawn_entity(world, bundle);
-    world.insert_one(e, Reputation { value: description.reputation as f32 }).unwrap();
+    world.insert_one(e, Reputation(description.reputation_cost_destroy)).unwrap();
     e
 }
 
 fn create_waste(world: &mut World, pos: Pos, r: &RandomGenerator,  description: &AlertYaml) -> Entity {
     let bundle = r.get_bundle_waste(pos);
     let e = spawn_entity(world, bundle);
-    world.insert_one(e, Reputation { value: description.reputation as f32 }).unwrap();
+    world.insert_one(e, Reputation(description.reputation_cost_destroy)).unwrap();
     e
 }

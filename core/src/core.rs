@@ -171,7 +171,7 @@ impl Core {
     fn init_world(&mut self) {
         // Создание vehicle на основе данных из YAML (VEHICLE_CAR)
 
-    for _ in 0..5 {
+    for _ in 0..1 {
         let vehicle = self.create_vehicle("VEHICLE_CAR", Pos { x: 5.0, y: 5.0 })
             .expect("Failed to create vehicle from YAML");
             // Create an item with interactions

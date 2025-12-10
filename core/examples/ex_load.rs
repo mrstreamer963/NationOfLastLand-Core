@@ -17,7 +17,7 @@ fn main() {
     println!("\nAlerts:");
     for (name, alert) in &descriptions.alerts {
         println!("  {}:", name);
-        println!("    reputation: {}", alert.reputation);
+        println!("    reputation_cost_destroy: {}", alert.reputation_cost_destroy);
         if let Some(interactions) = &alert.interactions {
             println!("    interactions:");
             for interaction in interactions {
@@ -54,6 +54,8 @@ fn main() {
         println!("  {}:", name);
         println!("    max_speed: {:?}", vehicle.max_speed);
         println!("    max_health: {:?}", vehicle.max_health);
+        println!("    reputation_cost: {}", vehicle.reputation_cost);
+        println!("    reputation_cost_destroy: {}", vehicle.reputation_cost_destroy);
         if !vehicle.active_slot.is_empty() {
             println!("    active_slot:");
             for slot in &vehicle.active_slot {

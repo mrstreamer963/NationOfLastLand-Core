@@ -13,7 +13,7 @@ pub struct AlertsYaml {
 pub struct AlertYaml {
     #[serde(rename = "type")]
     pub alert_type: String,
-    pub reputation: f32,
+    pub reputation_cost_destroy: f32,
     pub interactions: Option<Vec<Interaction>>,
 }
 

@@ -1,4 +1,4 @@
-use nation_of_last_land_core::Core;
+use nation_of_last_land_core::{Core, modules::components::Pos};
 use std::cell::RefCell;
 use wasm_bindgen::prelude::*;
 use web_sys::console;
@@ -47,4 +47,23 @@ pub fn update_world(delta_ms: f64) {
 #[wasm_bindgen]
 pub fn get_world_data() -> String {
     CORE.with(|core| core.borrow().export_world(false))
+}
+
+// Function to create a new vehicle
+#[wasm_bindgen]
+pub fn create_vehicle(vehicle_key: &str, x: f32, y: f32) -> Result<String, JsValue> {
+    CORE.with(|core| {
+        let result = core.borrow_mut().create_vehicle(vehicle_key, Pos { x, y });
+
+        match result {
+            Ok(vehicle) => {
+                // TODO remove it
+                let item = core.borrow_mut().create_item("ITEM_CLEANER", Pos { x: 5.0, y: 5.0 }).unwrap();
+                core.borrow_mut().attach_to_vehicle(vehicle, item, "front_left").unwrap();
+
+                Ok(format!("Vehicle '{}' created at ({:.2}, {:.2})", vehicle_key, x, y))
+            },
+            Err(e) => Err(JsValue::from_str(&e)),
+        }
+    })
 }

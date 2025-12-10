@@ -15,7 +15,7 @@ mod attached_items;
 mod unit_name;
 
 pub use spatial::{MaxSpeed, Pos, Rot, Velocity};
-pub use reputation::Reputation;
+pub use reputation::{Reputation, ReputationCost};
 pub use health::Health;
 pub use target::Target;
 pub use entity_type::EntityType;

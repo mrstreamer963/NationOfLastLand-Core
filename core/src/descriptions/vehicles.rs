@@ -29,6 +29,8 @@ pub struct VehicleYaml {
     pub max_health: crate::defines::MinMax,
     #[serde(rename = "active_slot")]
     pub active_slot: Vec<Slot>,
+    pub reputation_cost: f32,
+    pub reputation_cost_destroy: f32,
 }
 
 /// Функция для получения транспортных средств из статических данных
