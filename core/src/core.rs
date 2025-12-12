@@ -5,7 +5,7 @@ use crate::modules::markers::Item;
 use crate::modules::systems::dead_remover::do_remove_dead;
 use crate::modules::systems::interaction_system::do_interaction;
 use crate::modules::systems::move_system::{do_move, set_speed_by_target};
-use crate::world_utils::get_base_type;
+use crate::world_utils::{get_base_type, remove_entity};
 
 use crate::modules::setup::{self, load_setup_static};
 use crate::modules::state::State;
@@ -95,18 +95,11 @@ impl Core {
         let vehicle_type = get_base_type(&self.world, vehicle)?;
 
         if let Some(vehicle_data) = self.descriptions.vehicles.get(&vehicle_type) {
+            // Remove vehicle from world
+            remove_entity(&mut self.world, vehicle)?;
+
             // Add reputation for selling
             self.s.reputation.0 += vehicle_data.reputation_cost_sell;
-
-            // Remove vehicle from world
-            self.world.despawn(vehicle).map_err(|_| "Failed to remove vehicle")?;
-
-            // Remove from cache
-            crate::internal_data::INTERNAL_DATA.with(|data| {
-                let mut data = data.borrow_mut();
-                data.guid_to_entity.remove(&vehicle_guid);
-                data.entity_to_guid.remove(&vehicle);
-            });
 
             Ok(())
         } else {
