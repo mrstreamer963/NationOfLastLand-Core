@@ -1,0 +1,5 @@
+spatial:
+  threshold: 0.1
+  map_size:
+    width: 10
+    height: 10

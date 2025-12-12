@@ -8,7 +8,7 @@ use crate::modules::systems::interaction_system::do_interaction;
 use crate::modules::systems::move_system::{do_move, set_speed_by_target};
 use crate::world_utils::get_base_type;
 
-use crate::modules::setup;
+use crate::modules::setup::{self, load_setup_static};
 use crate::modules::state::State;
 use crate::modules::systems::ai_vehicle::{ai_vehicle_system};
 use crate::modules::systems::attack_processor::attack_process;
@@ -21,6 +21,7 @@ const ALERTS_YAML: &str = include_str!("../../data/alerts.yml");
 const DAMAGE_TYPES_YAML: &str = include_str!("../../data/damage_types.yml");
 const ITEMS_YAML: &str = include_str!("../../data/items.yml");
 const VEHICLES_YAML: &str = include_str!("../../data/vehicles.yml");
+const SETUP_YAML: &str = include_str!("../../data/setup.yml");
 
 pub struct Core {
     world: World,
@@ -40,7 +41,7 @@ impl Core {
     pub fn new() -> Self {
         let world = World::new();
         let s = State::new();
-        let setup = setup::new();
+        let setup = load_setup_static(SETUP_YAML).unwrap();
         let r = RandomGenerator {
             toxic_health: MinMax { max: 5.0, min: 1.0 },
             trash_probability_threshold: 0.9,

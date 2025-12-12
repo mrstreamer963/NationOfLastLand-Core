@@ -1,5 +1,20 @@
 use crate::defines::MapSize;
+use serde::Deserialize;
+use serde_yaml;
+use std::error::Error;
 
+#[derive(Deserialize)]
+struct SetupYaml {
+    spatial: SpatialYaml,
+}
+
+#[derive(Deserialize)]
+struct SpatialYaml {
+    threshold: f32,
+    map_size: MapSize,
+}
+
+#[derive(Clone, Copy)]
 pub struct Spatial {
     pub threshold: f32, // Threshold to consider reached, e.g., 1.0 units
     pub map_size: MapSize
@@ -9,10 +24,11 @@ pub struct Setup {
     pub spatial: Spatial
 }
 
-pub fn new() -> Setup {
-    let s = Spatial {
-        threshold: 0.1,
-        map_size: MapSize { width: 10, height: 10 }
+pub fn load_setup_static(yaml: &str) -> Result<Setup, Box<dyn Error>> {
+    let yaml_data: SetupYaml = serde_yaml::from_str(yaml)?;
+    let spatial = Spatial {
+        threshold: yaml_data.spatial.threshold,
+        map_size: yaml_data.spatial.map_size,
     };
-    Setup { spatial: s}
+    Ok(Setup { spatial })
 }
