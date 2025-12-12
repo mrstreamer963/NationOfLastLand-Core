@@ -1,4 +1,3 @@
-use crate::defines::MinMax;
 use crate::descriptions::{Descriptions, load_alerts_static, load_damage_types_static, load_items_static, load_vehicles_static};
 use crate::exporter::{export_entity_to_json, export_to_json};
 use crate::modules::components::{AttachedItems, Guid, Owner, Pos};
@@ -43,8 +42,8 @@ impl Core {
         let s = State::new();
         let setup = load_setup_static(SETUP_YAML).unwrap();
         let r = RandomGenerator {
-            toxic_health: MinMax { max: 5.0, min: 1.0 },
-            trash_probability_threshold: 0.9,
+            toxic_health: setup.toxic_health,
+            trash_probability_threshold: setup.trash_probability_threshold,
         };
         let descriptions = Descriptions::default();
 
