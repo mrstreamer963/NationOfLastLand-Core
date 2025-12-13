@@ -1,7 +1,7 @@
 use crate::descriptions::Descriptions;
 use crate::descriptions::alerts::AlertYaml;
 use crate::descriptions::bases::BaseYaml;
-use crate::modules::components::{BaseType, EntityType, Floors, Force, Guid, Health, MaxSpeed, Owner, Pos, Reputation, ReputationCost, Rot, Velocity};
+use crate::modules::components::{BaseType, EntityType, Floors, Force, Health, MaxSpeed, Owner, Pos, Reputation, ReputationCost, Rot, Velocity};
 use crate::modules::markers::{Base, Floor, IsWaitingTarget, Item, Vehicle};
 use crate::random_generator::RandomGenerator;
 use crate::world_utils::spawn_entity;
@@ -26,16 +26,6 @@ pub fn create_vehicle_from_description(world: &mut World, descriptions: &Descrip
             ReputationCost(vehicle_data.reputation_cost_buy)
         ));
 
-        // Update internal data maps
-        if let Ok(guid) = world.get::<&Guid>(e) {
-            let guid = *guid;
-            crate::internal_data::INTERNAL_DATA.with(|data| {
-                let mut data = data.borrow_mut();
-                data.guid_to_entity.insert(guid, e);
-                data.entity_to_guid.insert(e, guid);
-            });
-        }
-
         Ok(e)
     } else {
         Err(format!("Vehicle '{}' not found in descriptions", vehicle_key))
@@ -51,16 +41,6 @@ pub fn create_item_from_description(world: &mut World, descriptions: &Descriptio
             EntityType::Item,
             Item {},
         ));
-
-        // Update internal data maps
-        if let Ok(guid) = world.get::<&Guid>(e) {
-            let guid = *guid;
-            crate::internal_data::INTERNAL_DATA.with(|data| {
-                let mut data = data.borrow_mut();
-                data.guid_to_entity.insert(guid, e);
-                data.entity_to_guid.insert(e, guid);
-            });
-        }
 
         Ok(e)
     } else {
@@ -102,16 +82,6 @@ pub fn create_floor_from_description(world: &mut World, descriptions: &Descripti
             owner,
         ));
 
-        // Update internal data maps
-        if let Ok(guid) = world.get::<&Guid>(e) {
-            let guid = *guid;
-            crate::internal_data::INTERNAL_DATA.with(|data| {
-                let mut data = data.borrow_mut();
-                data.guid_to_entity.insert(guid, e);
-                data.entity_to_guid.insert(e, guid);
-            });
-        }
-
         Ok(e)
     } else {
         Err(format!("Floor '{}' not found in descriptions", floor_key))
@@ -123,16 +93,6 @@ fn create_trash(world: &mut World, pos: Pos, r: &RandomGenerator, description: &
     let e = spawn_entity(world, bundle);
     world.insert_one(e, Reputation(description.reputation_cost_destroy)).unwrap();
 
-    // Update internal data maps
-    if let Ok(guid) = world.get::<&Guid>(e) {
-        let guid = *guid;
-        crate::internal_data::INTERNAL_DATA.with(|data| {
-            let mut data = data.borrow_mut();
-            data.guid_to_entity.insert(guid, e);
-            data.entity_to_guid.insert(e, guid);
-        });
-    }
-
     e
 }
 
@@ -140,16 +100,6 @@ fn create_waste(world: &mut World, pos: Pos, r: &RandomGenerator,  description: 
     let bundle = r.get_bundle_waste(pos);
     let e = spawn_entity(world, bundle);
     world.insert_one(e, Reputation(description.reputation_cost_destroy)).unwrap();
-
-    // Update internal data maps
-    if let Ok(guid) = world.get::<&Guid>(e) {
-        let guid = *guid;
-        crate::internal_data::INTERNAL_DATA.with(|data| {
-            let mut data = data.borrow_mut();
-            data.guid_to_entity.insert(guid, e);
-            data.entity_to_guid.insert(e, guid);
-        });
-    }
 
     e
 }
@@ -163,16 +113,6 @@ fn create_main_base(world: &mut World, pos: Pos, description: &BaseYaml) -> Enti
         Reputation(description.reputation_cost_destroy),
         Floors(Vec::new())
     ));
-
-    // Update internal data maps
-    if let Ok(guid) = world.get::<&Guid>(e) {
-        let guid = *guid;
-        crate::internal_data::INTERNAL_DATA.with(|data| {
-            let mut data = data.borrow_mut();
-            data.guid_to_entity.insert(guid, e);
-            data.entity_to_guid.insert(e, guid);
-        });
-    }
 
     e
 }

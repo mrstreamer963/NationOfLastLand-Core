@@ -26,6 +26,17 @@ pub fn spawn_entity(
     let guid = Guid::new();
     let entity = world.spawn(bundle);
     world.insert_one(entity, guid).unwrap();
+
+    // Update internal data maps
+    if let Ok(guid) = world.get::<&Guid>(entity) {
+        let guid = *guid;
+        crate::internal_data::INTERNAL_DATA.with(|data| {
+            let mut data = data.borrow_mut();
+            data.guid_to_entity.insert(guid, entity);
+            data.entity_to_guid.insert(entity, guid);
+        });
+    }
+
     entity
 }
 
@@ -36,16 +47,6 @@ pub fn spawn_attack_event(world: &mut World, ev: Attack) -> Result<Entity, Strin
         Target { e: ev.target_unit, guid },
         ev.weapon_mode
     ));
-
-    // Update internal data maps
-    if let Ok(guid) = world.get::<&Guid>(e) {
-        let guid = *guid;
-        crate::internal_data::INTERNAL_DATA.with(|data| {
-            let mut data = data.borrow_mut();
-            data.guid_to_entity.insert(guid, e);
-            data.entity_to_guid.insert(e, guid);
-        });
-    }
 
     Ok(e)
 }
