@@ -13,6 +13,7 @@ mod owner;
 mod base_type;
 mod attached_items;
 mod unit_name;
+mod floors;
 
 pub use spatial::{MaxSpeed, Pos, Rot, Velocity};
 pub use reputation::{Reputation, ReputationCost};
@@ -28,3 +29,4 @@ pub use owner::Owner;
 pub use base_type::BaseType;
 pub use attached_items::AttachedItems;
 pub use unit_name::UnitName;
+pub use floors::Floors;

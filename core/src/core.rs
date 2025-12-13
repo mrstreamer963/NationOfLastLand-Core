@@ -1,6 +1,6 @@
-use crate::descriptions::{Descriptions, load_alerts_static, load_damage_types_static, load_items_static, load_vehicles_static};
+use crate::descriptions::{Descriptions, load_alerts_static, load_bases_static, load_damage_types_static, load_floors_static, load_items_static, load_vehicles_static};
 use crate::exporter::{export_entity_to_json, export_to_json};
-use crate::modules::components::{AttachedItems, Guid, Owner, Pos};
+use crate::modules::components::{AttachedItems, Floors, Guid, Owner, Pos};
 use crate::modules::markers::Item;
 use crate::modules::systems::dead_remover::do_remove_dead;
 use crate::modules::systems::interaction_system::do_interaction;
@@ -12,12 +12,14 @@ use crate::modules::state::State;
 use crate::modules::systems::ai_vehicle::{ai_vehicle_system};
 use crate::modules::systems::attack_processor::attack_process;
 use crate::random_generator::RandomGenerator;
-use crate::spawner::{create_alert_from_description, create_item_from_description, create_vehicle_from_description};
+use crate::spawner::{create_alert_from_description, create_base_from_description, create_floor_from_description, create_item_from_description, create_vehicle_from_description};
 use hecs::{Entity, World};
 use std::error::Error;
 
 const ALERTS_YAML: &str = include_str!("../../data/alerts.yml");
+const BASES_YAML: &str = include_str!("../../data/bases.yml");
 const DAMAGE_TYPES_YAML: &str = include_str!("../../data/damage_types.yml");
+const FLOORS_YAML: &str = include_str!("../../data/floors.yml");
 const ITEMS_YAML: &str = include_str!("../../data/items.yml");
 const VEHICLES_YAML: &str = include_str!("../../data/vehicles.yml");
 const SETUP_YAML: &str = include_str!("../../data/setup.yml");
@@ -83,6 +85,10 @@ impl Core {
 
     pub fn create_item(&mut self, item_key: &str, pos: Pos) -> Result<Entity, String> {
         create_item_from_description(&mut self.world, &self.descriptions, item_key, pos)
+    }
+
+    pub fn create_base(&mut self, base_key: &str, pos: Pos) -> Result<Entity, String> {
+        create_base_from_description(&mut self.world, &self.descriptions, base_key, pos)
     }
 
     pub fn sell_vehicle(&mut self, vehicle_guid: Guid) -> Result<(), String> {
@@ -175,6 +181,55 @@ impl Core {
         }
     }
 
+    pub fn attach_floor_to_base(&mut self, base: Entity, floor_type: &str) -> Result<(), String> {
+        // Check if floor type exists in descriptions
+        if self.descriptions.floors.contains_key(floor_type) {
+            // Get base type
+            let base_type = get_base_type(&self.world, base)?;
+            // Get base description
+            if let Some(base_desc) = self.descriptions.bases.get(&base_type) {
+                // Get base position
+                let base_pos = *self.world.get::<&Pos>(base).map_err(|_| "Base has no position")?;
+                // Get base guid
+                let base_guid = *self.world.get::<&Guid>(base).map_err(|_| "Base has no Guid")?;
+                let owner = Owner { e: base, guid: base_guid };
+
+                // Check if base has Floors component
+                {
+                    let floors = self.world.get::<&Floors>(base).map_err(|_| "Base does not have Floors component")?;
+                    // Check if not exceeding max_floors
+                    if floors.0.len() >= base_desc.max_floors as usize {
+                        return Err(format!("Cannot attach floor: maximum floors ({}) reached for base type '{}'", base_desc.max_floors, base_type));
+                    }
+                    // Check if floor type is already attached (by checking if any floor entity with this type exists)
+                    let already_attached = floors.0.iter().any(|&floor_entity| {
+                        if let Ok(floor_type_existing) = get_base_type(&self.world, floor_entity) {
+                            floor_type_existing == floor_type
+                        } else {
+                            false
+                        }
+                    });
+                    if already_attached {
+                        return Err(format!("Floor '{}' is already attached to this base", floor_type));
+                    }
+                }
+
+                // Create new floor entity
+                let floor_entity = create_floor_from_description(&mut self.world, &self.descriptions, floor_type, base_pos, owner)?;
+                // Add floor entity to the list
+                {
+                    let mut floors = self.world.get::<&mut Floors>(base).map_err(|_| "Base does not have Floors component")?;
+                    floors.0.push(floor_entity);
+                }
+                Ok(())
+            } else {
+                Err(format!("Base type '{}' not found in descriptions", base_type))
+            }
+        } else {
+            Err(format!("Floor type '{}' not found in descriptions", floor_type))
+        }
+    }
+
     pub fn export_world(&self, is_pretty: bool) -> String {
         export_to_json(&self.world, &self.s, is_pretty)
     }
@@ -198,7 +253,9 @@ impl Core {
 
     fn load(&mut self) -> Result<(), Box<dyn Error>> {
         self.descriptions.alerts = load_alerts_static(ALERTS_YAML)?;
+        self.descriptions.bases = load_bases_static(BASES_YAML)?;
         self.descriptions.damage_types = load_damage_types_static(DAMAGE_TYPES_YAML)?;
+        self.descriptions.floors = load_floors_static(FLOORS_YAML)?;
         self.descriptions.items = load_items_static(ITEMS_YAML)?.items;
         self.descriptions.vehicles = load_vehicles_static(VEHICLES_YAML)?.vehicles;
         self.descriptions.validate_attack_types()?;
@@ -209,6 +266,8 @@ impl Core {
 impl Core {
     fn init_world(&mut self) {
         // Создание vehicle на основе данных из YAML (VEHICLE_CAR)
+
+    self.create_base("BASE_MAIN", Pos { x: 10.0, y: 10.0 }).unwrap();
 
     for _ in 0..1 {
         let vehicle = self.create_vehicle("VEHICLE_CAR", Pos { x: 5.0, y: 5.0 })
