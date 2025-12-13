@@ -1,7 +1,7 @@
 use crate::descriptions::Descriptions;
 use crate::descriptions::alerts::AlertYaml;
 use crate::descriptions::bases::BaseYaml;
-use crate::modules::components::{BaseType, EntityType, Floors, Force, Health, MaxSpeed, Pos, Reputation, ReputationCost, Rot, Velocity};
+use crate::modules::components::{BaseType, EntityType, Force, Health, MaxSpeed, Pos, Reputation, ReputationCost, Rot, Velocity};
 use crate::modules::markers::{Base, Floor, IsWaitingTarget, Item, Vehicle};
 use crate::random_generator::RandomGenerator;
 use crate::world_utils::spawn_entity;
@@ -108,8 +108,7 @@ fn create_main_base(world: &mut World, pos: Pos, description: &BaseYaml) -> Enti
         Base {},
         EntityType::Base,
         BaseType(description.base_type.clone()),
-        Reputation(description.reputation_cost_destroy),
-        Floors(Vec::new())
+        Reputation(description.reputation_cost_destroy)
     ));
 
     e
