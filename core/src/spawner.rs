@@ -60,7 +60,7 @@ pub fn create_alert_from_description(world: &mut World, descriptions: &Descripti
     }
 }
 
-pub fn create_base_from_description(world: &mut World, descriptions: &Descriptions, base_key: &str, pos: Pos, r: &RandomGenerator) -> Result<Entity, String> {
+pub fn create_base_from_description(world: &mut World, descriptions: &Descriptions, base_key: &str, pos: Pos) -> Result<Entity, String> {
     if let Some(description) = descriptions.bases.get(base_key) {
         match base_key {
             "BASE_MAIN" => Ok(create_main_base(world, pos, description)),

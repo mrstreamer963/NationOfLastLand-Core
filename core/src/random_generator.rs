@@ -4,7 +4,7 @@ use crate::{
     defines::{MapSize, MinMax},
     modules::{
         components::{DamageType, EntityType, Health, Pos, Resistance, UnitName},
-        markers::{Alert, Base, Trash}
+        markers::{Alert, Trash}
     },
 };
 

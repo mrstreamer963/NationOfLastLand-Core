@@ -88,7 +88,7 @@ impl Core {
     }
 
     pub fn create_base(&mut self, base_key: &str, pos: Pos) -> Result<Entity, String> {
-        create_base_from_description(&mut self.world, &self.descriptions, base_key, pos, &self.r)
+        create_base_from_description(&mut self.world, &self.descriptions, base_key, pos)
     }
 
     pub fn sell_vehicle(&mut self, vehicle_guid: Guid) -> Result<(), String> {
