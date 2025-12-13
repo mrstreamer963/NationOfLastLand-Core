@@ -15,6 +15,7 @@ pub struct BaseYaml {
     pub base_type: String,
     pub reputation_cost_destroy: f32,
     pub max_floors: u32,
+    #[serde(default)]
     pub floors: Vec<String>,
     pub interactions: Option<Vec<Interaction>>,
 }
