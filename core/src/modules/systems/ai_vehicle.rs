@@ -1,111 +1,109 @@
-use crate::defines::Point;
-use crate::modules::components::{
-    IsMoving, IsStopped, IsWaitingTarget, MaxSpeed, Pos, Target, Velocity,
-};
-use crate::modules::entities::{Vehicle, Waste};
+use crate::modules::components::{Guid, Pos};
+use crate::modules::components::Target;
+use crate::modules::markers::{IsMoving, IsWaitingTarget, Trash, Vehicle};
+use std::collections::HashSet;
 use hecs::World;
 
-fn find_nearest_waste_from_list(waste_positions: &[Pos], from: Pos) -> Option<Pos> {
-    let mut nearest: Option<Pos> = None;
-    let mut min_distance_squared = f32::INFINITY;
+fn set_target_to_waiting_vehicles(world: &mut World, trash_infos: &Vec<(hecs::Entity, Guid, Pos)>, assigned_trash: &mut HashSet<hecs::Entity>) {
+    // Collect all vehicle entities that are waiting for targets and their nearest waste
+    let mut waiting_entities: Vec<(hecs::Entity, Target)> = Vec::new();
 
-    for &pos in waste_positions {
-        let dx = pos.x - from.x;
-        let dy = pos.y - from.y;
-        let distance_squared = dx * dx + dy * dy;
-
-        if distance_squared < min_distance_squared {
-            min_distance_squared = distance_squared;
-            nearest = Some(pos);
-        }
-    }
-
-    nearest
-}
-
-fn move_vehicles(world: &mut World) {
-    // Collect entities that have arrived
-    let mut arrived_entities = Vec::new();
-
-    // Query for vehicles that are moving and update their velocity and position
-    for (entity, (pos, target, velocity, max_speed, _is_moving)) in world
-        .query::<(&mut Pos, &Target, &mut Velocity, &MaxSpeed, &IsMoving)>()
+    for (entity, (pos, _vehicle, _waiting)) in
+        world.query::<(&Pos, &Vehicle, &IsWaitingTarget)>()
         .iter()
     {
-        let dx = target.value.x - pos.x;
-        let dy = target.value.y - pos.y;
-        let distance_squared = dx * dx + dy * dy;
-
-        // Threshold to consider reached, e.g., 1.0 units
-        const THRESHOLD: f32 = 0.1;
-        if distance_squared < THRESHOLD * THRESHOLD {
-            // Arrived at target
-            arrived_entities.push(entity);
-            // Set position to target and reset velocity to zero
-            pos.x = target.value.x;
-            pos.y = target.value.y;
-            velocity.x = 0.0;
-            velocity.y = 0.0;
-        } else {
-            // Compute direction and set velocity
-            let distance = distance_squared.sqrt();
-            let dir_x = dx / distance;
-            let dir_y = dy / distance;
-            velocity.x = dir_x * max_speed.value;
-            velocity.y = dir_y * max_speed.value;
-            // Move the vehicle
-            pos.x += velocity.x;
-            pos.y += velocity.y;
+        // Find nearest trash by Entity and Guid that is not already assigned
+        let mut min_dist_sq = f32::INFINITY;
+        let mut nearest = None;
+        for &(t_entity, t_guid, t_pos) in trash_infos {
+            if assigned_trash.contains(&t_entity) {
+                continue;
+            }
+            let dx = t_pos.x - pos.x;
+            let dy = t_pos.y - pos.y;
+            let dist_sq = dx * dx + dy * dy;
+            if dist_sq < min_dist_sq {
+                min_dist_sq = dist_sq;
+                nearest = Some((t_guid, t_entity));
+            }
+        }
+        if let Some((ng, ne)) = nearest {
+            // Assign target
+            assigned_trash.insert(ne);
+            let target = Target { e: ne, guid: ng };
+            waiting_entities.push((entity, target));
         }
     }
 
-    // Change state for arrived vehicles
-    for entity in arrived_entities {
-        world.remove_one::<IsMoving>(entity).unwrap();
-        world.insert_one(entity, IsStopped {}).unwrap();
+    for (entity, target) in waiting_entities {
+        world.insert_one(entity, target).unwrap();
+        world.insert_one(entity, IsMoving {}).unwrap();
+        world.remove_one::<IsWaitingTarget>(entity).unwrap();
     }
 }
 
-fn set_target_to_waiting_vehicles(world: &mut World) {
-    // First, precompute all waste positions
-    let mut waste_positions = Vec::new();
-    for (_entity, (pos, _waste)) in world.query::<(&Pos, &Waste)>().iter() {
-        waste_positions.push(*pos);
-    }
+fn reassign_closer_targets_for_moving_vehicles(world: &mut World, trash_infos: &Vec<(hecs::Entity, Guid, Pos)>, assigned_trash: &mut HashSet<hecs::Entity>) {
+    let mut reassignments: Vec<(hecs::Entity, Target, hecs::Entity)> = Vec::new(); // vehicle, new_target, old_trash_to_remove
 
-    // Then, collect all vehicle entities that are waiting for targets
-    let mut waiting_vehicles = Vec::new();
-    for (entity, (pos, _vehicle, _waiting)) in
-        world.query::<(&Pos, &Vehicle, &IsWaitingTarget)>().iter()
+    for (entity, (pos, _vehicle, target, _moving)) in
+        world.query::<(&Pos, &Vehicle, &Target, &IsMoving)>()
+        .iter()
     {
-        waiting_vehicles.push((entity, *pos));
+        // Calculate distance to current target
+        if let Ok(mut query) = world.query_one::<(&Pos,)>(target.e) {
+            if let Some((current_pos,)) = query.get() {
+                let dx_current = current_pos.x - pos.x;
+                let dy_current = current_pos.y - pos.y;
+                let current_dist_sq = dx_current * dx_current + dy_current * dy_current;
+
+                // Find nearest trash closer than current
+                let mut min_dist_sq = f32::INFINITY;
+                let mut nearest = None;
+                for &(t_entity, t_guid, t_pos) in trash_infos {
+                    if assigned_trash.contains(&t_entity) {
+                        continue; // Skip assigned trash
+                    }
+                    let dx = t_pos.x - pos.x;
+                    let dy = t_pos.y - pos.y;
+                    let dist_sq = dx * dx + dy * dy;
+                    if dist_sq < min_dist_sq && dist_sq < current_dist_sq {
+                        min_dist_sq = dist_sq;
+                        nearest = Some((t_guid, t_entity));
+                    }
+                }
+                if let Some((ng, ne)) = nearest {
+                    // Free old trash and assign new
+                    assigned_trash.remove(&target.e); // Remove old assignment
+                    assigned_trash.insert(ne);
+                    let new_target = Target { e: ne, guid: ng };
+                    reassignments.push((entity, new_target, target.e));
+                }
+            }
+        }
     }
 
-    // Find targets for each waiting vehicle and assign them
-    for (entity, pos) in waiting_vehicles {
-        let nearest_waste = find_nearest_waste_from_list(&waste_positions, pos);
-        if let Some(waste_pos) = nearest_waste {
-            // Assign target
-            let target = Target {
-                value: Point {
-                    x: waste_pos.x,
-                    y: waste_pos.y,
-                },
-            };
-            world.insert_one(entity, target).unwrap();
-
-            // Remove waiting state
-            world.remove_one::<IsWaitingTarget>(entity).unwrap();
-
-            // Add moving state
-            world.insert_one(entity, IsMoving {}).unwrap();
-        }
+    for (vehicle_entity, new_target, _old_trash) in reassignments {
+        // Update the vehicle's target
+        // Since target is a component, we can replace it
+        world.remove_one::<Target>(vehicle_entity).unwrap();
+        world.insert_one(vehicle_entity, new_target).unwrap();
     }
 }
 
 /// System that processes vehicles waiting for targets, assigns nearest waste, and changes their state
 pub fn ai_vehicle_system(world: &mut World) {
-    set_target_to_waiting_vehicles(world);
+    // First, precompute all waste infos
+    let mut trash_infos: Vec<(hecs::Entity, Guid, Pos)> = Vec::new();
+    for (entity, (pos, _trash, guid)) in world.query::<(&Pos, &Trash, &Guid)>().iter() {
+        trash_infos.push((entity, *guid, *pos));
+    }
 
-    move_vehicles(world);
+    // Collect assigned trash: trash that are targets of vehicles (waiting, moving, or near target)
+    let mut assigned_trash: HashSet<hecs::Entity> = HashSet::new();
+    for (_entity, target) in world.query::<&Target>().iter() {
+        assigned_trash.insert(target.e);
+    }
+
+    set_target_to_waiting_vehicles(world, &trash_infos, &mut assigned_trash);
+    reassign_closer_targets_for_moving_vehicles(world, &trash_infos, &mut assigned_trash);
 }

@@ -47,27 +47,95 @@
             border-radius: 3px;
             min-height: 100px;
         }
+        /* Tab styles */
+        .tab-container {
+            margin: 20px 0;
+        }
+        .tab-buttons {
+            display: flex;
+            border-bottom: 1px solid #ccc;
+        }
+        .tab-button {
+            background: none;
+            border: none;
+            padding: 10px 20px;
+            color: #007bff;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+        }
+        .tab-button.active {
+            border-bottom-color: #007bff;
+            background: #f0f0f0;
+        }
+        .tab-content {
+            display: none;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-top: none;
+            border-radius: 0 0 5px 5px;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .machine-list {
+            list-style: none;
+            padding: 0;
+        }
+        .machine-item {
+            margin: 10px 0;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+        }
+        .machine-title {
+            font-weight: bold;
+            color: #007bff;
+        }
+        .machine-params {
+            margin-left: 10px;
+        }
+        .param {
+            margin: 2px 0;
+        }
     </style>
 </head>
 <body>
     <h1>Example WASM Module</h1>
 
-    <div class="container">
-        <h2>Core Info</h2>
-        <button onclick="showCoreInfo()">Get Core Info</button>
-    </div>
-
-    <div class="container">
-        <h2>Async Example</h2>
-        <button onclick="runAsyncExample()">Run Async</button>
-    </div>
-
-    <div class="container">
-        <h2>Pixi.js Rendering</h2>
-        <button onclick="initRender()">Init World</button>
-        <button onclick="startAnimation()" id="startBtn">Start Animation</button>
-        <button onclick="stopAnimation()" id="stopBtn" disabled>Stop Animation</button>
-        <div id="canvasContainer"></div>
+    <!-- Tab Container -->
+    <div class="tab-container">
+        <div class="tab-buttons">
+            <button class="tab-button active" onclick="showTab('render')">Rendering</button>
+            <button class="tab-button" onclick="showTab('machines')">Machines Params</button>
+            <button class="tab-button" onclick="showTab('core')">Core Info</button>
+            <button class="tab-button" onclick="showTab('async')">Async Example</button>
+        </div>
+        <div id="render-tab" class="tab-content active">
+            <h2>Pixi.js Rendering</h2>
+            <button onclick="initRender()">Init World</button>
+            <button onclick="startAnimation()" id="startBtn">Start Animation</button>
+            <button onclick="stopAnimation()" id="stopBtn" disabled>Stop Animation</button>
+            <button onclick="singleAnimate()">Single Animate</button>
+            <div style="margin: 10px 0;">
+                <input type="text" id="vehicleType" placeholder="VEHICLE_CAR" value="VEHICLE_CAR" onchange="updateButtonState()" style="margin-right: 10px;">
+                <input type="number" id="vehicleX" placeholder="X" value="5.0" step="0.1" style="width: 80px; margin-right: 10px;">
+                <input type="number" id="vehicleY" placeholder="Y" value="5.0" step="0.1" style="width: 80px; margin-right: 10px;">
+                <button onclick="createMachine()">Create Machine</button>
+            </div>
+            <div id="canvasContainer"></div>
+        </div>
+        <div id="machines-tab" class="tab-content">
+            <h2>Machines Parameters</h2>
+            <ul id="machines-list" class="machine-list"></ul>
+        </div>
+        <div id="core-tab" class="tab-content">
+            <h2>Core Info</h2>
+            <button onclick="showCoreInfo()">Get Core Info</button>
+        </div>
+        <div id="async-tab" class="tab-content">
+            <h2>Async Example</h2>
+            <button onclick="runAsyncExample()">Run Async</button>
+        </div>
     </div>
 
     <div id="output">
@@ -76,7 +144,7 @@
     </div>
 
     <script type="module">
-        import init, { get_core_info, async_example, get_world_data, update_world } from './pkg/example_wasm.js';
+        import init, { get_core_info, async_example, get_world_data, update_world, create_vehicle, can_create_vehicle, sell_vehicle } from './pkg/example_wasm.js';
 
         let pixiApp = null;
         let animationFrame = null;
@@ -84,15 +152,39 @@
         let isRunning = false;
         let canvas = null;
         let ctx = null;
+        let machinesMap = new Map(); // Map to store machine DOM elements by Guid
 
         async function run() {
             await init();
             log('WASM module loaded successfully!');
+            updateButtonState();
         }
+
+        window.showTab = function(tabName) {
+            // Hide all tabs
+            const tabs = document.querySelectorAll('.tab-content');
+            tabs.forEach(tab => tab.classList.remove('active'));
+            // Show selected tab
+            document.getElementById(tabName + '-tab').classList.add('active');
+            // Update button styles
+            const buttons = document.querySelectorAll('.tab-button');
+            buttons.forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+        };
 
         window.showCoreInfo = function() {
             const info = get_core_info();
-            log(`Core Info: ${info}`);
+            const worldDataJson = get_world_data();
+            updateButtonState();
+            let worldData;
+            try {
+                worldData = JSON.parse(worldDataJson);
+                const reputation = worldData.state && typeof worldData.state.reputation === 'number' ? worldData.state.reputation.toFixed(2) : 'N/A';
+                log(`Core Info: ${info}. Reputation: ${reputation}`);
+            } catch (error) {
+                console.error('JSON parse error:', error);
+                log(`Core Info: ${info}. Reputation: Error parsing data`);
+            }
         };
 
         window.runAsyncExample = async function() {
@@ -126,18 +218,9 @@
         function draw() {
             if (!ctx) return;
 
-            // Clear background
-            ctx.fillStyle = 'white';
-            ctx.fillRect(0, 0, 800, 600);
-
-            // Add test text
-            ctx.fillStyle = 'black';
-            ctx.font = '16px Arial';
-            ctx.fillText('Canvas2D is working!', 10, 30);
-
             // Get world data from WASM
             const worldDataJson = get_world_data();
-            console.log('worldDataJson:', worldDataJson);
+            updateButtonState();
 
             let worldData;
             try {
@@ -148,43 +231,173 @@
                 return;
             }
 
-            // Display time
+            // Update machines list
+            updateMachinesParams(worldData);
+
+            // Clear background
+            ctx.fillStyle = 'white';
+            ctx.fillRect(0, 0, 800, 600);
+
+            // Add test text
+            ctx.fillStyle = 'black';
+            ctx.font = '16px Arial';
+            ctx.fillText('Canvas2D is working!', 10, 30);
+
+            // Display time and reputation
             if (worldData.state && worldData.state.time !== undefined) {
                 ctx.fillText(`Time: ${worldData.state.time.toFixed(2)}`, 10, 50);
+            }
+            if (worldData.state && typeof worldData.state.reputation === 'number') {
+                ctx.fillText(`Reputation: ${worldData.state.reputation.toFixed(2)}`, 10, 70);
             }
 
             // Scale factor for positions
             const scale = 50;
 
-            // Draw wastes (red squares)
-            worldData.wastes.forEach((waste, index) => {
-                console.log(`Drawing waste ${index} at pos:`, waste.pos);
-                const x = waste.pos.x * scale;
-                const y = waste.pos.y * scale;
-                ctx.fillStyle = 'red';
-                ctx.fillRect(x, y, 20, 20);
-                ctx.strokeStyle = 'black';
-                ctx.lineWidth = 1;
-                ctx.strokeRect(x, y, 20, 20);
-                console.log(`Waste drawn at: ${x}, ${y}`);
-            });
+            // Draw units based on type
+            if (worldData.units && Array.isArray(worldData.units)) {
+                worldData.units.forEach((unit, index) => {
+                    // console.log(`Drawing unit ${index} at pos:`, unit.Pos, 'type:', unit.EntityType);
+                    if (!unit.Pos || typeof unit.Pos.x !== 'number' || typeof unit.Pos.y !== 'number') {
+                        // console.log(`Skipping unit ${index} due to invalid position data`);
+                        return;
+                    }
+                    const x = unit.Pos.x * scale;
+                    const y = unit.Pos.y * scale;
+                    if (unit.EntityType === 'Vehicle') {
+                        ctx.beginPath();
+                        ctx.arc(x, y, 15, 0, 2 * Math.PI);
+                        ctx.fillStyle = 'blue';
+                        ctx.fill();
+                        ctx.strokeStyle = 'black';
+                        ctx.stroke();
+                        // console.log(`Vehicle drawn at: ${x}, ${y}`);
+                    } else if (unit.EntityType === 'Waste' || unit.EntityType === 'Trash') {
+                        ctx.fillStyle = 'red';
+                        ctx.fillRect(x, y, 20, 20);
+                        ctx.strokeStyle = 'black';
+                        ctx.lineWidth = 1;
+                        ctx.strokeRect(x, y, 20, 20);
+                        // console.log(`Waste drawn at: ${x}, ${y}`);
+                    }
+                });
+            }
 
-            // Draw vehicles (blue circles)
-            worldData.vehicles.forEach((vehicle, index) => {
-                console.log(`Drawing vehicle ${index} at pos:`, vehicle.pos);
-                const x = vehicle.pos.x * scale;
-                const y = vehicle.pos.y * scale;
-                ctx.beginPath();
-                ctx.arc(x, y, 15, 0, 2 * Math.PI);
-                ctx.fillStyle = 'blue';
-                ctx.fill();
-                ctx.strokeStyle = 'black';
-                ctx.stroke();
-                console.log(`Vehicle drawn at: ${x}, ${y}`);
-            });
-
-            console.log('Drawing completed');
+            // console.log('Drawing completed');
         }
+
+        function createMachineElement(unit) {
+            const li = document.createElement('li');
+            li.className = 'machine-item';
+
+            const titleDiv = document.createElement('div');
+            titleDiv.className = 'machine-title';
+            titleDiv.textContent = unit.UnitName;
+            li.appendChild(titleDiv);
+
+            const paramsDiv = document.createElement('div');
+            paramsDiv.className = 'machine-params';
+
+            const posParam = document.createElement('div');
+            posParam.className = 'param';
+            paramsDiv.appendChild(posParam);
+
+            const healthParam = document.createElement('div');
+            healthParam.className = 'param';
+            paramsDiv.appendChild(healthParam);
+
+            const velocityParam = document.createElement('div');
+            velocityParam.className = 'param';
+            paramsDiv.appendChild(velocityParam);
+
+            const maxSpeedParam = document.createElement('div');
+            maxSpeedParam.className = 'param';
+            paramsDiv.appendChild(maxSpeedParam);
+
+            const sellButton = document.createElement('button');
+            sellButton.textContent = 'Sell';
+            sellButton.style.background = '#dc3545';
+            sellButton.addEventListener('click', () => {
+                console.log('Sell button clicked for', unit.Guid);
+                sellMachine(unit.Guid);
+            });
+            paramsDiv.appendChild(sellButton);
+
+            li.appendChild(paramsDiv);
+
+            updateMachineElement(li, unit);
+
+            return li;
+        }
+
+        function updateMachineElement(element, unit) {
+            const titleDiv = element.querySelector('.machine-title');
+            titleDiv.textContent = unit.UnitName;
+
+            const params = element.querySelector('.machine-params');
+            const posParam = params.children[0];
+            posParam.innerHTML = `<strong>Position:</strong> (${unit.Pos && typeof unit.Pos.x === 'number' ? unit.Pos.x.toFixed(2) : 'N/A'}, ${unit.Pos && typeof unit.Pos.y === 'number' ? unit.Pos.y.toFixed(2) : 'N/A'})`;
+
+            const healthParam = params.children[1];
+            healthParam.innerHTML = `<strong>Health:</strong> ${unit.Health && typeof unit.Health.current === 'number' ? `${unit.Health.current.toFixed(1)} / ${unit.Health.max.toFixed(1)}` : 'N/A'}`;
+
+            const velocityParam = params.children[2];
+            velocityParam.innerHTML = `<strong>Velocity:</strong> ${unit.Velocity && typeof unit.Velocity.x === 'number' ? `(${unit.Velocity.x.toFixed(2)}, ${unit.Velocity.y.toFixed(2)})` : 'N/A'}`;
+
+            const maxSpeedParam = params.children[3];
+            maxSpeedParam.innerHTML = `<strong>Max Speed:</strong> ${unit.MaxSpeed && typeof unit.MaxSpeed.min === 'number' && typeof unit.MaxSpeed.max === 'number' ? `${unit.MaxSpeed.min.toFixed(2)} / ${unit.MaxSpeed.max.toFixed(2)}` : 'N/A'}`;
+        }
+
+        window.updateMachinesParams = function(worldData) {
+            const machinesList = document.getElementById('machines-list');
+
+            if (!worldData.units || !Array.isArray(worldData.units)) {
+                // If no units, clear everything
+                machinesMap.forEach(machine => {
+                    if (machine.element && machine.element.parentNode) {
+                        machine.element.parentNode.removeChild(machine.element);
+                    }
+                });
+                machinesMap.clear();
+                return;
+            }
+
+            let vehicles = worldData.units.filter(unit => unit.EntityType === 'Vehicle');
+            vehicles.sort((a, b) => {
+                const nameA = a.UnitName || '';
+                const nameB = b.UnitName || '';
+                return nameA.localeCompare(nameB);
+            });
+
+            // Create set of current Guids
+            const currentGuids = new Set(vehicles.map(v => v.Guid));
+
+            // Remove machines that are no longer present
+            for (const [guid, machine] of machinesMap) {
+                if (!currentGuids.has(guid)) {
+                    if (machine.element && machine.element.parentNode) {
+                        machine.element.parentNode.removeChild(machine.element);
+                    }
+                    machinesMap.delete(guid);
+                }
+            }
+
+            // Update or add machines
+            vehicles.forEach((unit, index) => {
+                if (machinesMap.has(unit.Guid)) {
+                    // Update existing
+                    const machine = machinesMap.get(unit.Guid);
+                    updateMachineElement(machine.element, unit);
+                } else {
+                    // Create new
+                    const element = createMachineElement(unit);
+                    machinesMap.set(unit.Guid, { element, unit });
+                    machinesList.appendChild(element);
+                }
+            });
+
+
+        };
 
         function animate(currentTime) {
             if (!isRunning) return;
@@ -229,6 +442,54 @@
 
             log('Animation stopped');
         };
+
+        window.singleAnimate = function() {
+            update_world(16); // typical frame time for 60fps
+            draw();
+            // Update machines params if on machines tab
+            log('Single animate step executed');
+        };
+
+        window.createMachine = function() {
+            const vehicleType = document.getElementById('vehicleType').value;
+            const x = parseFloat(document.getElementById('vehicleX').value);
+            const y = parseFloat(document.getElementById('vehicleY').value);
+            try {
+                const result = create_vehicle(vehicleType, x, y);
+                log(result);
+                // Update button state after creating (reputation might have changed)
+                updateButtonState();
+                // Redraw after creating
+                draw();
+            } catch (error) {
+                log(`Error creating vehicle: ${error}`);
+            }
+        };
+
+        window.sellMachine = function(entityId) {
+            console.log('sellMachine called with entityId:', entityId);
+            log('entityId: ', entityId);
+            try {
+                const result = sell_vehicle(entityId);
+                console.log('sell_vehicle result:', result);
+                log(result);
+                // Update button state after selling (reputation might have changed)
+                updateButtonState();
+                // Redraw after selling
+                draw();
+            } catch (error) {
+                console.log('Error in sellMachine:', error);
+                log(`Error selling vehicle: ${error}`);
+            }
+        };
+
+        function updateButtonState() {
+            const vehicleType = document.getElementById('vehicleType').value;
+            const canCreate = can_create_vehicle(vehicleType);
+            const createBtn = document.querySelector('button[onclick="createMachine()"]');
+            createBtn.disabled = !canCreate;
+            createBtn.style.background = canCreate ? '#007bff' : '#ccc';
+        }
 
         function log(message) {
             const resultDiv = document.getElementById('result');

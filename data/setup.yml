@@ -1,0 +1,7 @@
+spatial:
+  threshold: 0.1
+  map_size:
+    width: 10
+    height: 10
+toxic_health: [1.0, 5.0]
+trash_probability_threshold: 0.99

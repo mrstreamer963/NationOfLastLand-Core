@@ -1,6 +1,8 @@
-use serde::Serialize;
+use serde::{Serialize, Deserialize};
 
-#[derive(Serialize, Clone, Copy, Default)]
-pub struct Reputation {
-    pub value: f32,
-}
+#[derive(Serialize, Deserialize, Clone, Copy, Default)]
+#[serde(transparent)]
+pub struct Reputation(pub f32);
+
+#[derive(Serialize, Deserialize, Clone, Copy, Default)]
+pub struct ReputationCost(pub f32);

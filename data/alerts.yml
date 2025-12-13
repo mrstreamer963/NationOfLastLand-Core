@@ -1,0 +1,8 @@
+alerts:
+  - type: ALERT_TRASH
+    reputation_cost_destroy: 1.5
+  - type: ALERT_WASTE
+    reputation_cost_destroy: 1.2
+    interactions:
+    - name: ATTACK_ACID
+      DMG_ACID: 1.0

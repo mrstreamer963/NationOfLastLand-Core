@@ -5,3 +5,4 @@ git-set-remotes.sh
 # Added by cargo
 /target
 .idea/
+.DS_Store

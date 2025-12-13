@@ -1,0 +1,17 @@
+vehicles:
+- type: VEHICLE_CAR
+  max_speed: [0.1, 0.5]
+  max_health: [5.0, 20.0]
+  reputation_cost_buy: 100.0
+  reputation_cost_sell: 50.0
+  reputation_cost_destroy: -500.0
+  active_slot:
+    - id: "front_left"
+      slot_type: "main"
+      mount_point: "turret_front_left"
+    - id: "front_rigth"
+      slot_type: "main"
+      mount_point: "turret_front_right"
+    - id: "roof"
+      slot_type: "auxiliary"
+      mount_point: "roof_mount"

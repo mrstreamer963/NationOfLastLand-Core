@@ -1,0 +1,28 @@
+use hecs::World;
+use crate::modules::state::State;
+use crate::modules::markers::IsDead;
+use crate::modules::components::Reputation;
+use crate::world_utils::remove_entity;
+
+pub fn do_remove_dead(world: &mut World, state: &mut State) {
+    // Sum reputation from dead entities
+    let mut reputation_to_add = 0.0;
+    for (_entity, (reputation, _is_dead)) in world.query::<(&Reputation, &IsDead)>().iter() {
+        reputation_to_add += reputation.0;
+    }
+
+    // Add to state reputation
+    state.reputation.0 += reputation_to_add;
+
+    // Collect entities with IsDead marker
+    let mut entities_to_remove: Vec<hecs::Entity> = Vec::new();
+
+    for (entity, _is_dead) in world.query::<&IsDead>().iter() {
+        entities_to_remove.push(entity);
+    }
+
+    // Remove the collected entities
+    for entity in entities_to_remove {
+        remove_entity(world, entity).unwrap();
+    }
+}
