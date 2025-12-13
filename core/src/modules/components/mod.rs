@@ -12,6 +12,7 @@ mod weapon_mode;
 mod owner;
 mod base_type;
 mod attached_items;
+mod attached_floors;
 mod unit_name;
 
 pub use spatial::{MaxSpeed, Pos, Rot, Velocity};
@@ -27,4 +28,5 @@ pub use weapon_mode::WeaponMode;
 pub use owner::Owner;
 pub use base_type::BaseType;
 pub use attached_items::AttachedItems;
+pub use attached_floors::AttachedFloors;
 pub use unit_name::UnitName;

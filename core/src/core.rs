@@ -13,6 +13,7 @@ use crate::modules::setup::{self, load_setup_static};
 use crate::modules::state::State;
 use crate::modules::systems::ai_vehicle::{ai_vehicle_system};
 use crate::modules::systems::attack_processor::attack_process;
+use crate::modules::systems::attach::attach_process;
 use crate::random_generator::RandomGenerator;
 use crate::spawner::{create_alert_from_description, create_base_from_description, create_item_from_description, create_vehicle_from_description};
 use hecs::{Entity, World};
@@ -119,6 +120,7 @@ impl Core {
 
         do_interaction(&mut self.world, &self.descriptions);
         attack_process(&mut self.world);
+        attach_process(&mut self.world);
 
         // Generate trash with probability > trash_probability_threshold
         if crate::random_generator::generate_probability() > self.r.trash_probability_threshold {
