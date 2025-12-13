@@ -1,4 +1,4 @@
-use crate::base_utils::attach_floor_to_base;
+use crate::base_utils::add_floor_to_base;
 use crate::descriptions::{Descriptions, load_alerts_static, load_bases_static, load_damage_types_static, load_floors_static, load_items_static, load_vehicles_static};
 use crate::exporter::{export_entity_to_json, export_to_json};
 use crate::internal_data::get_entity_by_guid;
@@ -179,8 +179,8 @@ impl Core {
         }
     }
 
-    pub fn attach_floor_to_base(&mut self, base: Entity, floor_type: &str) -> Result<(), String> {
-        attach_floor_to_base(&mut self.world, &self.descriptions, base, floor_type)
+    pub fn add_floor_to_base(&mut self, base: Entity, floor_type: &str) -> Result<(), String> {
+        add_floor_to_base(&mut self.world, &self.descriptions, base, floor_type)
     }
 
     pub fn export_world(&self, is_pretty: bool) -> String {

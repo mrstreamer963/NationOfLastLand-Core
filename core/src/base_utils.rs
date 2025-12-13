@@ -36,7 +36,7 @@ pub fn can_attach_floor_to_base(
     Ok(())
 }
 
-pub fn attach_floor_to_base(
+pub fn add_floor_to_base(
     world: &mut World,
     descriptions: &Descriptions,
     base: Entity,
