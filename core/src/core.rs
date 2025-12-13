@@ -120,7 +120,7 @@ impl Core {
 
         do_interaction(&mut self.world, &self.descriptions);
         attack_process(&mut self.world);
-        attach_process(&mut self.world);
+        attach_process(&mut self.world, &self.descriptions);
 
         // Generate trash with probability > trash_probability_threshold
         if crate::random_generator::generate_probability() > self.r.trash_probability_threshold {
