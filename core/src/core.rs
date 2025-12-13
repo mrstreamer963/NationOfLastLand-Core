@@ -1,5 +1,6 @@
 use crate::descriptions::{Descriptions, load_alerts_static, load_bases_static, load_damage_types_static, load_floors_static, load_items_static, load_vehicles_static};
 use crate::exporter::{export_entity_to_json, export_to_json};
+use crate::internal_data::get_entity_by_guid;
 use crate::modules::components::{AttachedItems, Floors, Guid, Owner, Pos};
 use crate::modules::markers::Item;
 use crate::modules::systems::dead_remover::do_remove_dead;
@@ -93,9 +94,7 @@ impl Core {
 
     pub fn sell_vehicle(&mut self, vehicle_guid: Guid) -> Result<(), String> {
         // Get entity from guid
-        let vehicle = crate::internal_data::INTERNAL_DATA.with(|data| {
-            data.borrow().guid_to_entity.get(&vehicle_guid).copied()
-        }).ok_or_else(|| format!("Vehicle with Guid {:?} not found", vehicle_guid))?;
+        let vehicle = get_entity_by_guid(&vehicle_guid).ok_or_else(|| format!("Vehicle with Guid {:?} not found", vehicle_guid))?;
 
         // Get vehicle type
         let vehicle_type = get_base_type(&self.world, vehicle)?;

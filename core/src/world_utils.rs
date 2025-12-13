@@ -1,5 +1,6 @@
 use hecs::{World, Entity};
 use crate::modules::{components::{BaseType, Guid, Owner, Target, WeaponMode}, markers::{AttackEvent, IsTargetNear, IsWaitingTarget}};
+use crate::internal_data::{add_guid_entity, get_guid_by_entity, remove_by_guid};
 
 #[derive(Clone, Debug)]
 pub struct Attack {
@@ -30,11 +31,7 @@ pub fn spawn_entity(
     // Update internal data maps
     if let Ok(guid) = world.get::<&Guid>(entity) {
         let guid = *guid;
-        crate::internal_data::INTERNAL_DATA.with(|data| {
-            let mut data = data.borrow_mut();
-            data.guid_to_entity.insert(guid, entity);
-            data.entity_to_guid.insert(entity, guid);
-        });
+        add_guid_entity(guid, entity);
     }
 
     entity
@@ -59,10 +56,7 @@ pub fn attach_entity(world: &mut World, entity: Entity, owner: Entity) -> Result
         return Err("Owner entity not found".to_string());
     }
 
-    let owner_guid = crate::internal_data::INTERNAL_DATA.with(|data| {
-        let data = data.borrow();
-        data.entity_to_guid.get(&owner).copied()
-    }).ok_or("Owner guid not found in internal data".to_string())?;
+    let owner_guid = get_guid_by_entity(&owner).ok_or("Owner guid not found in internal data".to_string())?;
 
     world.insert_one(entity, Owner { e: owner, guid: owner_guid }).map_err(|_| "Failed to insert Owner".to_string())?;
     Ok(())
@@ -95,11 +89,7 @@ pub fn remove_entity(world: &mut World, entity: Entity) -> Result<(), String> {
     // Remove from internal data maps
     if let Ok(guid) = world.get::<&Guid>(entity) {
         let guid = *guid;
-        crate::internal_data::INTERNAL_DATA.with(|data| {
-            let mut data = data.borrow_mut();
-            data.guid_to_entity.remove(&guid);
-            data.entity_to_guid.remove(&entity);
-        });
+        remove_by_guid(&guid);
     }
 
     // Despawn the entity
