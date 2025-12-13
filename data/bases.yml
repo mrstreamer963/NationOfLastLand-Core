@@ -1,4 +1,10 @@
 bases:
+  - type: START_BASE
+    max_floors: 1
+    floors:
+      - type: FLOOR_EMPTY
+      - type: FLOOR_EMPTY
+      - type: FLOOR_EMPTY
   - type: BASE_MAIN
     reputation_cost_destroy: 10.0
     max_floors: 1
