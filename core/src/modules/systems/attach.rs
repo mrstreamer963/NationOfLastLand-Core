@@ -1,5 +1,6 @@
 use hecs::{Entity, World};
 
+use crate::base_utils::can_attach_floor_to_base;
 use crate::descriptions::Descriptions;
 use crate::modules::components::AttachedFloors;
 use crate::modules::markers::AddFloorEvent;
@@ -15,11 +16,21 @@ pub fn attach_process(world: &mut World, descriptions: &Descriptions) {
         .collect();
 
     for (event_entity, event) in attach_events {
+        // Check if we can still attach the floor (state might have changed since event creation)
+        if let Err(e) = can_attach_floor_to_base(world, descriptions, event.base, &event.floor_type) {
+            eprintln!("Cannot attach floor '{}' to base: {}", event.floor_type, e);
+            // Remove the attach event entity
+            world.despawn(event_entity).unwrap();
+            continue;
+        }
+
         // Create floor entity from description
         let floor_entity = match create_floor_from_description(world, descriptions, &event.floor_type) {
             Ok(entity) => entity,
             Err(e) => {
                 eprintln!("Failed to create floor '{}': {}", event.floor_type, e);
+                // Remove the attach event entity
+                world.despawn(event_entity).unwrap();
                 continue;
             }
         };
