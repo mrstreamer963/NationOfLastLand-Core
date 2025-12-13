@@ -132,9 +132,9 @@ fn create_main_base(world: &mut World, pos: Pos, description: &BaseYaml) -> Enti
     let e = spawn_entity(world, (
         pos,
         Base {},
-        EntityType::Base, 
+        EntityType::Base,
         Reputation(description.reputation_cost_destroy),
-        Floors(description.floors)
+        Floors(description.floors.clone())
     ));
     
     // Update internal data maps

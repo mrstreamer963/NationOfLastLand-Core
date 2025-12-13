@@ -3,6 +3,7 @@ pub mod items;
 pub mod vehicles;
 pub mod alerts;
 pub mod bases;
+pub mod floors;
 pub mod descriptions;
 pub mod active_slots;
 
@@ -11,5 +12,6 @@ pub use items::{ItemsContainer, ItemYaml, ItemInteraction, load_items_static};
 pub use vehicles::{VehiclesContainer, VehicleYaml, Slot, load_vehicles_static};
 pub use alerts::{AlertsDescriptions, load_alerts_static};
 pub use bases::{BasesDescriptions, load_bases_static};
+pub use floors::{FloorsDescriptions, load_floors_static};
 pub use descriptions::Descriptions;
 pub use active_slots::{ActiveSlot, ActiveSlots, SlotType};

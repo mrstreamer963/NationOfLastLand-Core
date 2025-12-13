@@ -1,10 +1,10 @@
 bases:
   - type: BASE_MAIN
     reputation_cost_destroy: 10.0
-    floors: 1
+    floors: []
   - type: BASE_OUTPOST
     reputation_cost_destroy: 5.0
-    floors: 1
+    floors: []
     interactions:
     - name: DEFEND
       DMG_BULLET: 2.0

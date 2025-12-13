@@ -1,4 +1,4 @@
 use serde::Serialize;
 
-#[derive(Serialize, Clone, Copy)]
-pub struct Floors(pub u32);
+#[derive(Serialize, Clone)]
+pub struct Floors(pub Vec<String>);

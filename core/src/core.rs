@@ -1,6 +1,6 @@
-use crate::descriptions::{Descriptions, load_alerts_static, load_bases_static, load_damage_types_static, load_items_static, load_vehicles_static};
+use crate::descriptions::{Descriptions, load_alerts_static, load_bases_static, load_damage_types_static, load_floors_static, load_items_static, load_vehicles_static};
 use crate::exporter::{export_entity_to_json, export_to_json};
-use crate::modules::components::{AttachedItems, Guid, Owner, Pos};
+use crate::modules::components::{AttachedItems, Floors, Guid, Owner, Pos};
 use crate::modules::markers::Item;
 use crate::modules::systems::dead_remover::do_remove_dead;
 use crate::modules::systems::interaction_system::do_interaction;
@@ -19,6 +19,7 @@ use std::error::Error;
 const ALERTS_YAML: &str = include_str!("../../data/alerts.yml");
 const BASES_YAML: &str = include_str!("../../data/bases.yml");
 const DAMAGE_TYPES_YAML: &str = include_str!("../../data/damage_types.yml");
+const FLOORS_YAML: &str = include_str!("../../data/floors.yml");
 const ITEMS_YAML: &str = include_str!("../../data/items.yml");
 const VEHICLES_YAML: &str = include_str!("../../data/vehicles.yml");
 const SETUP_YAML: &str = include_str!("../../data/setup.yml");
@@ -180,6 +181,26 @@ impl Core {
         }
     }
 
+    pub fn attach_floor_to_base(&mut self, base: Entity, floor_type: &str) -> Result<(), String> {
+        // Check if floor type exists in descriptions
+        if self.descriptions.floors.contains_key(floor_type) {
+            // Check if base has Floors component
+            if let Ok(mut floors) = self.world.get::<&mut Floors>(base) {
+                // Add floor type to the list if not already present
+                if !floors.0.contains(&floor_type.to_string()) {
+                    floors.0.push(floor_type.to_string());
+                    Ok(())
+                } else {
+                    Err(format!("Floor '{}' is already attached to this base", floor_type))
+                }
+            } else {
+                Err("Base does not have Floors component".to_string())
+            }
+        } else {
+            Err(format!("Floor type '{}' not found in descriptions", floor_type))
+        }
+    }
+
     pub fn export_world(&self, is_pretty: bool) -> String {
         export_to_json(&self.world, &self.s, is_pretty)
     }
@@ -205,6 +226,7 @@ impl Core {
         self.descriptions.alerts = load_alerts_static(ALERTS_YAML)?;
         self.descriptions.bases = load_bases_static(BASES_YAML)?;
         self.descriptions.damage_types = load_damage_types_static(DAMAGE_TYPES_YAML)?;
+        self.descriptions.floors = load_floors_static(FLOORS_YAML)?;
         self.descriptions.items = load_items_static(ITEMS_YAML)?.items;
         self.descriptions.vehicles = load_vehicles_static(VEHICLES_YAML)?.vehicles;
         self.descriptions.validate_attack_types()?;

@@ -14,7 +14,7 @@ pub struct BaseYaml {
     #[serde(rename = "type")]
     pub base_type: String,
     pub reputation_cost_destroy: f32,
-    pub floors: u32,
+    pub floors: Vec<String>,
     pub interactions: Option<Vec<Interaction>>,
 }
 

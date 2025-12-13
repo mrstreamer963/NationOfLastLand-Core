@@ -9,6 +9,8 @@ pub struct Descriptions {
     pub alerts: AlertsDescriptions,
     /// Описания баз, где ключ - тип базы, значение - структура с данными базы
     pub bases: BasesDescriptions,
+    /// Описания этажей, где ключ - тип этажа, значение - структура с данными этажа
+    pub floors: FloorsDescriptions,
     /// Предметы, где ключ - название предмета, значение - данные предмета
     pub items: HashMap<String, ItemYaml>,
     /// Транспортные средства, где ключ - название транспорта, значение - данные транспорта
