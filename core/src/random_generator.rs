@@ -10,6 +10,7 @@ use crate::{
 
 pub struct RandomGenerator {
     pub trash_probability_threshold: f32,
+    pub waste_probability_threshold: f32,
 }
 
 pub fn generate_between(range: &MinMax) -> f32 {

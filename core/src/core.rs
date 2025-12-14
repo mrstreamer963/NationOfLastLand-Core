@@ -48,6 +48,7 @@ impl Core {
         let setup = load_setup_static(SETUP_YAML).unwrap();
         let r = RandomGenerator {
             trash_probability_threshold: setup.trash_probability_threshold,
+            waste_probability_threshold: setup.waste_probability_threshold,
         };
         let descriptions = Descriptions::default();
 
@@ -70,6 +71,13 @@ impl Core {
         let pos = generate_random_pos(&self.setup.spatial.map_size);
 
         create_alert_from_description(&mut self.world, &self.descriptions, "ALERT_TRASH", pos, &self.r)
+    }
+
+    pub fn create_waste(&mut self) -> Result<Entity, String> {
+        use crate::random_generator::generate_random_pos;
+        let pos = generate_random_pos(&self.setup.spatial.map_size);
+
+        create_alert_from_description(&mut self.world, &self.descriptions, "ALERT_WASTE", pos, &self.r)
     }
 
     pub fn create_vehicle(&mut self, vehicle_key: &str, pos: Pos) -> Result<Entity, String> {
@@ -124,6 +132,11 @@ impl Core {
         // Generate trash with probability > trash_probability_threshold
         if crate::random_generator::generate_probability() > self.r.trash_probability_threshold {
             self.create_trash()?;
+        }
+
+        // Generate waste with probability > waste_probability_threshold
+        if crate::random_generator::generate_probability() > self.r.waste_probability_threshold {
+            self.create_waste()?;
         }
 
         // Run AI system to process waiting vehicles and assign targets

@@ -7,6 +7,7 @@ use std::error::Error;
 struct SetupYaml {
     spatial: SpatialYaml,
     trash_probability_threshold: f32,
+    waste_probability_threshold: f32,
 }
 
 #[derive(Deserialize)]
@@ -24,6 +25,7 @@ pub struct Spatial {
 pub struct Setup {
     pub spatial: Spatial,
     pub trash_probability_threshold: f32,
+    pub waste_probability_threshold: f32,
 }
 
 pub fn load_setup_static(yaml: &str) -> Result<Setup, Box<dyn Error>> {
@@ -35,5 +37,6 @@ pub fn load_setup_static(yaml: &str) -> Result<Setup, Box<dyn Error>> {
     Ok(Setup {
         spatial,
         trash_probability_threshold: yaml_data.trash_probability_threshold,
+        waste_probability_threshold: yaml_data.waste_probability_threshold,
     })
 }
