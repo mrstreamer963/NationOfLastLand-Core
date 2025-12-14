@@ -77,6 +77,19 @@ pub fn create_vehicle(vehicle_key: &str, x: f32, y: f32) -> Result<String, JsVal
     })
 }
 
+// Function to create a new base
+#[wasm_bindgen]
+pub fn create_base(base_key: &str, x: f32, y: f32) -> Result<String, JsValue> {
+    CORE.with(|core| {
+        let result = core.borrow_mut().create_base(base_key, Pos { x, y });
+
+        match result {
+            Ok(_base) => Ok(format!("Base '{}' created at ({:.2}, {:.2})", base_key, x, y)),
+            Err(e) => Err(JsValue::from_str(&e)),
+        }
+    })
+}
+
 // Function to sell a vehicle
 #[wasm_bindgen]
 pub fn sell_vehicle(guid_str: &str) -> Result<String, JsValue> {

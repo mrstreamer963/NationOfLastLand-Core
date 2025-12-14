@@ -122,6 +122,12 @@
                 <input type="number" id="vehicleY" placeholder="Y" value="5.0" step="0.1" style="width: 80px; margin-right: 10px;">
                 <button onclick="createMachine()">Create Machine</button>
             </div>
+            <div style="margin: 10px 0;">
+                <input type="text" id="baseType" placeholder="BASE_MAIN" value="BASE_MAIN" style="margin-right: 10px;">
+                <input type="number" id="baseX" placeholder="X" value="10.0" step="0.1" style="width: 80px; margin-right: 10px;">
+                <input type="number" id="baseY" placeholder="Y" value="10.0" step="0.1" style="width: 80px; margin-right: 10px;">
+                <button onclick="createBase()">Create Base</button>
+            </div>
             <div id="canvasContainer"></div>
         </div>
         <div id="machines-tab" class="tab-content">
@@ -144,7 +150,7 @@
     </div>
 
     <script type="module">
-        import init, { get_core_info, async_example, get_world_data, update_world, create_vehicle, can_create_vehicle, sell_vehicle } from './pkg/example_wasm.js';
+        import init, { get_core_info, async_example, get_world_data, update_world, create_vehicle, create_base, can_create_vehicle, sell_vehicle } from './pkg/example_wasm.js';
 
         let pixiApp = null;
         let animationFrame = null;
@@ -272,8 +278,23 @@
                         ctx.strokeStyle = 'black';
                         ctx.stroke();
                         // console.log(`Vehicle drawn at: ${x}, ${y}`);
-                    } else if (unit.EntityType === 'Waste' || unit.EntityType === 'Trash') {
+                    } else if (unit.EntityType === 'Base') {
+                        ctx.beginPath();
+                        ctx.arc(x, y, 15, 0, 2 * Math.PI);
+                        ctx.fillStyle = 'lightblue';
+                        ctx.fill();
+                        ctx.strokeStyle = 'black';
+                        ctx.stroke();
+                        // console.log(`Base drawn at: ${x}, ${y}`);
+                    } else if (unit.EntityType === 'Trash') {
                         ctx.fillStyle = 'red';
+                        ctx.fillRect(x, y, 20, 20);
+                        ctx.strokeStyle = 'black';
+                        ctx.lineWidth = 1;
+                        ctx.strokeRect(x, y, 20, 20);
+                        // console.log(`Trash drawn at: ${x}, ${y}`);
+                    } else if (unit.EntityType === 'Waste') {
+                        ctx.fillStyle = 'orange';
                         ctx.fillRect(x, y, 20, 20);
                         ctx.strokeStyle = 'black';
                         ctx.lineWidth = 1;
@@ -463,6 +484,20 @@
                 draw();
             } catch (error) {
                 log(`Error creating vehicle: ${error}`);
+            }
+        };
+
+        window.createBase = function() {
+            const baseType = document.getElementById('baseType').value;
+            const x = parseFloat(document.getElementById('baseX').value);
+            const y = parseFloat(document.getElementById('baseY').value);
+            try {
+                const result = create_base(baseType, x, y);
+                log(result);
+                // Redraw after creating
+                draw();
+            } catch (error) {
+                log(`Error creating base: ${error}`);
             }
         };
 

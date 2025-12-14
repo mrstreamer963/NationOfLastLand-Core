@@ -45,7 +45,7 @@ define_serialize_components! {
 }
 
 define_serialize_markers! {
-    Alert, Vehicle, IsMoving, IsWaitingTarget
+    Alert, Vehicle, Base, IsMoving, IsWaitingTarget
 }
 
 struct ExportData {

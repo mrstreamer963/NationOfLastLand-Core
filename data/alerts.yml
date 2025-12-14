@@ -1,8 +1,10 @@
 alerts:
   - type: ALERT_TRASH
     reputation_cost_destroy: 1.5
+    max_health: [5.0, 20.0]
   - type: ALERT_WASTE
     reputation_cost_destroy: 1.2
+    max_health: [5.0, 20.0]
     interactions:
     - name: ATTACK_ACID
       DMG_ACID: 1.0

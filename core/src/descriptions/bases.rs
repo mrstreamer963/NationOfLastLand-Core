@@ -1,21 +1,20 @@
 use serde::Deserialize;
 use serde_yaml;
 use std::{collections::HashMap, error::Error};
-use crate::defines::MinMax;
 
-pub type AlertsDescriptions = HashMap<String, AlertYaml>;
+pub type BasesDescriptions = HashMap<String, BaseYaml>;
 
 #[derive(Deserialize)]
-pub struct AlertsYaml {
-    alerts: Vec<AlertYaml>,
+pub struct BasesYaml {
+    bases: Vec<BaseYaml>,
 }
 
 #[derive(Deserialize, Debug, Clone)]
-pub struct AlertYaml {
+pub struct BaseYaml {
     #[serde(rename = "type")]
-    pub alert_type: String,
+    pub base_type: String,
     pub reputation_cost_destroy: f32,
-    pub max_health: MinMax,
+    pub max_floors: u32,
     pub interactions: Option<Vec<Interaction>>,
 }
 
@@ -26,11 +25,11 @@ pub struct Interaction {
     pub effects: HashMap<String, f64>,
 }
 
-pub fn load_alerts_static(yaml: &str) -> Result<AlertsDescriptions, Box<dyn Error>> {
-    let data: AlertsYaml = serde_yaml::from_str(yaml)?;
+pub fn load_bases_static(yaml: &str) -> Result<BasesDescriptions, Box<dyn Error>> {
+    let data: BasesYaml = serde_yaml::from_str(yaml)?;
     let mut map = HashMap::new();
-    for alert in data.alerts {
-        map.insert(alert.alert_type.clone(), alert);
+    for base in data.bases {
+        map.insert(base.base_type.clone(), base);
     }
     Ok(map)
 }
