@@ -1,6 +1,7 @@
 use serde::Deserialize;
 use serde_yaml;
 use std::{collections::HashMap, error::Error};
+use crate::defines::MinMax;
 
 pub type AlertsDescriptions = HashMap<String, AlertYaml>;
 
@@ -14,6 +15,7 @@ pub struct AlertYaml {
     #[serde(rename = "type")]
     pub alert_type: String,
     pub reputation_cost_destroy: f32,
+    pub max_health: MinMax,
     pub interactions: Option<Vec<Interaction>>,
 }
 

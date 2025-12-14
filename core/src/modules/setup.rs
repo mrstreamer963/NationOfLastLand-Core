@@ -1,4 +1,4 @@
-use crate::defines::{MapSize, MinMax};
+use crate::defines::MapSize;
 use serde::Deserialize;
 use serde_yaml;
 use std::error::Error;
@@ -6,7 +6,6 @@ use std::error::Error;
 #[derive(Deserialize)]
 struct SetupYaml {
     spatial: SpatialYaml,
-    toxic_health: MinMax,
     trash_probability_threshold: f32,
 }
 
@@ -24,7 +23,6 @@ pub struct Spatial {
 
 pub struct Setup {
     pub spatial: Spatial,
-    pub toxic_health: MinMax,
     pub trash_probability_threshold: f32,
 }
 
@@ -36,7 +34,6 @@ pub fn load_setup_static(yaml: &str) -> Result<Setup, Box<dyn Error>> {
     };
     Ok(Setup {
         spatial,
-        toxic_health: yaml_data.toxic_health,
         trash_probability_threshold: yaml_data.trash_probability_threshold,
     })
 }

@@ -47,7 +47,6 @@ impl Core {
         let s = State::new();
         let setup = load_setup_static(SETUP_YAML).unwrap();
         let r = RandomGenerator {
-            toxic_health: setup.toxic_health,
             trash_probability_threshold: setup.trash_probability_threshold,
         };
         let descriptions = Descriptions::default();

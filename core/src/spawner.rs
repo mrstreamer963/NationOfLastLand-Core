@@ -89,7 +89,7 @@ pub fn create_floor_from_description(world: &mut World, descriptions: &Descripti
 }
 
 fn create_trash(world: &mut World, pos: Pos, r: &RandomGenerator, description: &AlertYaml) -> Entity {
-    let bundle = r.get_bundle_trash(pos);
+    let bundle = r.get_bundle_trash(pos, &description.max_health);
     let e = spawn_entity(world, bundle);
     world.insert_one(e, Reputation(description.reputation_cost_destroy)).unwrap();
 
@@ -97,7 +97,7 @@ fn create_trash(world: &mut World, pos: Pos, r: &RandomGenerator, description: &
 }
 
 fn create_waste(world: &mut World, pos: Pos, r: &RandomGenerator,  description: &AlertYaml) -> Entity {
-    let bundle = r.get_bundle_waste(pos);
+    let bundle = r.get_bundle_waste(pos, &description.max_health);
     let e = spawn_entity(world, bundle);
     world.insert_one(e, Reputation(description.reputation_cost_destroy)).unwrap();
 
