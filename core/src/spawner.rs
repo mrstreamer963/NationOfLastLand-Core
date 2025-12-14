@@ -1,6 +1,5 @@
 use crate::descriptions::Descriptions;
 use crate::descriptions::alerts::AlertYaml;
-use crate::descriptions::bases::BaseYaml;
 use crate::modules::components::{BaseType, EntityType, Force, Health, MaxSpeed, Pos, Reputation, ReputationCost, Rot, Velocity};
 use crate::modules::markers::{Base, Floor, IsWaitingTarget, Item, Vehicle};
 use crate::random_generator::RandomGenerator;
@@ -62,11 +61,14 @@ pub fn create_alert_from_description(world: &mut World, descriptions: &Descripti
 
 pub fn create_base_from_description(world: &mut World, descriptions: &Descriptions, base_key: &str, pos: Pos) -> Result<Entity, String> {
     if let Some(description) = descriptions.bases.get(base_key) {
-        match base_key {
-            "BASE_MAIN" => Ok(create_main_base(world, pos, description)),
-            "BASE_OUTPOST" => Ok(create_main_base(world, pos, description)),
-            _ => Err(format!("Unknown base type '{}'", base_key)),
-        }
+        let e = spawn_entity(world, (
+            pos,
+            Base {},
+            EntityType::Base,
+            BaseType(description.base_type.clone()),
+            Reputation(description.reputation_cost_destroy)
+        ));
+        Ok(e)
     } else {
         Err(format!("Base '{}' not found in descriptions", base_key))
     }
@@ -98,18 +100,6 @@ fn create_waste(world: &mut World, pos: Pos, r: &RandomGenerator,  description: 
     let bundle = r.get_bundle_waste(pos);
     let e = spawn_entity(world, bundle);
     world.insert_one(e, Reputation(description.reputation_cost_destroy)).unwrap();
-
-    e
-}
-
-fn create_main_base(world: &mut World, pos: Pos, description: &BaseYaml) -> Entity {
-    let e = spawn_entity(world, (
-        pos,
-        Base {},
-        EntityType::Base,
-        BaseType(description.base_type.clone()),
-        Reputation(description.reputation_cost_destroy)
-    ));
 
     e
 }
