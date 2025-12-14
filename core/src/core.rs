@@ -217,8 +217,8 @@ impl Core {
     fn init_world(&mut self) {
         // Создание vehicle на основе данных из YAML (VEHICLE_CAR)
 
-    let e = self.create_base("BASE_MAIN", Pos { x: 10.0, y: 10.0 }).unwrap();
-    self.add_floor_to_base(e, "FLOOR_EMPTY").unwrap();
+    let e = self.create_base("BASE_START", Pos { x: 10.0, y: 10.0 }).unwrap();
+    self.add_floor_to_base(e, "FLOOR_PARK").unwrap();
 
     for _ in 0..1 {
         let vehicle = self.create_vehicle("VEHICLE_CAR", Pos { x: 5.0, y: 5.0 })
