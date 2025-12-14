@@ -286,8 +286,15 @@
                         ctx.strokeStyle = 'black';
                         ctx.stroke();
                         // console.log(`Base drawn at: ${x}, ${y}`);
-                    } else if (unit.EntityType === 'Waste' || unit.EntityType === 'Trash') {
+                    } else if (unit.EntityType === 'Trash') {
                         ctx.fillStyle = 'red';
+                        ctx.fillRect(x, y, 20, 20);
+                        ctx.strokeStyle = 'black';
+                        ctx.lineWidth = 1;
+                        ctx.strokeRect(x, y, 20, 20);
+                        // console.log(`Trash drawn at: ${x}, ${y}`);
+                    } else if (unit.EntityType === 'Waste') {
+                        ctx.fillStyle = 'orange';
                         ctx.fillRect(x, y, 20, 20);
                         ctx.strokeStyle = 'black';
                         ctx.lineWidth = 1;
