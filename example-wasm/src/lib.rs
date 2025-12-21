@@ -1,10 +1,10 @@
-use nation_of_last_land_core::{Core, modules::components::Pos};
+use nation_of_last_land_core::{Core, modules::components::{Pos, Fraction}};
 use std::cell::RefCell;
 use wasm_bindgen::prelude::*;
 use web_sys::console;
 
 thread_local! {
-    static CORE: RefCell<Core> = RefCell::new(Core::new());
+    static CORE: RefCell<Core> = RefCell::new(Core::new(true));
 }
 
 // This is like the `main` function, except for JavaScript.
@@ -62,7 +62,7 @@ pub fn can_create_vehicle(vehicle_key: &str) -> bool {
 #[wasm_bindgen]
 pub fn create_vehicle(vehicle_key: &str, x: f32, y: f32) -> Result<String, JsValue> {
     CORE.with(|core| {
-        let result = core.borrow_mut().create_vehicle(vehicle_key, Pos { x, y });
+        let result = core.borrow_mut().create_vehicle(vehicle_key, Pos { x, y }, Fraction::Neutral);
 
         match result {
             Ok(vehicle) => {

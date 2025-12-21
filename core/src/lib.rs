@@ -1,7 +1,7 @@
 mod core;
 mod defines;
 mod random_generator;
-mod world_utils;
+pub mod world_utils;
 mod spawner;
 mod exporter;
 mod internal_data;

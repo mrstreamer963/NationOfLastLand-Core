@@ -2,7 +2,7 @@ use nation_of_last_land_core::Core;
 use nation_of_last_land_core::modules::markers::IsDead;
 
 fn main() {
-    let mut core = Core::new();
+    let mut core = Core::new(false);
 
     // Create a trash
     let trash_entity = core.create_trash().unwrap();

@@ -4,13 +4,18 @@ use crate::modules::markers::{IsMoving, IsTargetNear, IsWaitingTarget};
 use crate::modules::setup::Spatial;
 use hecs::World;
 
-pub fn set_speed_by_target(world: &mut World, spatial: &Spatial) {
-    // Collect all entities that need speed setting
-    let mut entities_near_target = Vec::new();
-    let mut entities_missing_target = Vec::new();
+enum Action {
+    NearTarget { entity: hecs::Entity, target_pos: Pos },
+    SetVelocity { entity: hecs::Entity, vx: f32, vy: f32 },
+    MissingTarget { entity: hecs::Entity },
+}
 
-    for (entity, (pos, velocity, target, max_speed, _moving)) in
-        world.query::<(&mut Pos, &mut Velocity, &Target, &MaxSpeed, &IsMoving)>().iter()
+pub fn set_speed_by_target(world: &mut World, spatial: &Spatial) {
+    // Collect actions to perform
+    let mut actions = Vec::new();
+
+    for (entity, (pos, target, _moving)) in
+        world.query::<(&Pos, &Target, &IsMoving)>().iter()
     {
         // Get target position by querying directly
         if let Ok(mut query) = world.query_one::<(&Pos,)>(target.e) {
@@ -19,52 +24,65 @@ pub fn set_speed_by_target(world: &mut World, spatial: &Spatial) {
                 let dy = target_pos.y - pos.y;
                 let dist_sq = dx * dx + dy * dy;
 
-                let speed = max_speed.0.min;
-
-                let desired_vx = dx;
-                let desired_vy = dy;
-                let desired_speed_sq = desired_vx.powi(2) + desired_vy.powi(2);
-
                 if dist_sq < spatial.threshold * spatial.threshold {
                     // Close enough to target
-                    velocity.x = 0.0;
-                    velocity.y = 0.0;
-
-                    *pos = *target_pos;
-
-                    entities_near_target.push(entity);
-                } else if desired_speed_sq == 0.0 {
-                    velocity.x = 0.0;
-                    velocity.y = 0.0;
-                } else if desired_speed_sq > speed.powi(2) {
-                    let scale = speed / desired_speed_sq.sqrt();
-                    velocity.x = desired_vx * scale;
-                    velocity.y = desired_vy * scale;
+                    actions.push(Action::NearTarget { entity, target_pos: *target_pos });
                 } else {
-                    // Distance <= speed, reach exactly
-                    velocity.x = desired_vx;
-                    velocity.y = desired_vy;
+                    // Check if entity has MaxSpeed
+                    if let Ok(max_speed) = world.get::<&MaxSpeed>(entity) {
+                        let speed = max_speed.0.min;
+
+                        let desired_vx = dx;
+                        let desired_vy = dy;
+                        let desired_speed_sq = desired_vx.powi(2) + desired_vy.powi(2);
+
+                        if desired_speed_sq == 0.0 {
+                            actions.push(Action::SetVelocity { entity, vx: 0.0, vy: 0.0 });
+                        } else if desired_speed_sq > speed.powi(2) {
+                            let scale = speed / desired_speed_sq.sqrt();
+                            actions.push(Action::SetVelocity { entity, vx: desired_vx * scale, vy: desired_vy * scale });
+                        } else {
+                            // Distance <= speed, reach exactly
+                            actions.push(Action::SetVelocity { entity, vx: desired_vx, vy: desired_vy });
+                        }
+                    }
+                    // If no MaxSpeed, don't set velocity, but still check distance for NearTarget
                 }
             } else {
                 // Target does not exist, mark for removal
-                entities_missing_target.push(entity);
+                actions.push(Action::MissingTarget { entity });
             }
         } else {
             // If query_one fails, also consider target missing
-            entities_missing_target.push(entity);
+            actions.push(Action::MissingTarget { entity });
         }
     }
 
-    // Set IsTargetNear for close entities and remove IsMoving
-    for entity in entities_near_target {
-        world.insert_one(entity, IsTargetNear {}).unwrap();
-        world.remove_one::<IsMoving>(entity).unwrap();
-    }
-
-    // Remove IsMoving and set IsWaitingTarget for entities with missing targets
-    for entity in entities_missing_target {
-        world.remove_one::<IsMoving>(entity).unwrap();
-        world.insert_one(entity, IsWaitingTarget {}).unwrap();
+    // Apply actions
+    for action in actions {
+        match action {
+            Action::NearTarget { entity, target_pos } => {
+                if let Ok(mut pos) = world.get::<&mut Pos>(entity) {
+                    *pos = target_pos;
+                }
+                if let Ok(mut velocity) = world.get::<&mut Velocity>(entity) {
+                    velocity.x = 0.0;
+                    velocity.y = 0.0;
+                }
+                world.insert_one(entity, IsTargetNear {}).unwrap();
+                world.remove_one::<IsMoving>(entity).unwrap();
+            }
+            Action::SetVelocity { entity, vx, vy } => {
+                if let Ok(mut velocity) = world.get::<&mut Velocity>(entity) {
+                    velocity.x = vx;
+                    velocity.y = vy;
+                }
+            }
+            Action::MissingTarget { entity } => {
+                world.remove_one::<IsMoving>(entity).unwrap();
+                world.insert_one(entity, IsWaitingTarget {}).unwrap();
+            }
+        }
     }
 }
 

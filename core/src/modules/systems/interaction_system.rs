@@ -24,16 +24,18 @@ pub fn do_interaction(world: &mut World, descriptions: &Descriptions) {
             if let Ok(item_type) = get_base_type(world, *item_entity) {
                 // println!("{}", item_type);
                 if let Some(base_item) = descriptions.items.get(&item_type) {
-                    for interaction in base_item.interactions.iter() {
-                        for (damage_type_str, damage) in interaction.action.iter() {
-                            if let Some(dt) = DamageType::from_str(damage_type_str) {
-                                let w = WeaponMode {
-                                    damage_type: dt,
-                                    damage: *damage,
-                                    range: 0.0,
-                                };
-                                attack_events.push(Attack {
-                                    weapon_mode: w, target_unit: target.e });
+                    if let Some(interactions) = &base_item.interactions {
+                        for interaction in interactions {
+                            for (damage_type_str, damage) in interaction.1.effects.iter() {
+                                if let Some(dt) = DamageType::from_str(damage_type_str) {
+                                    let w = WeaponMode {
+                                        damage_type: dt,
+                                        damage: *damage as f32,
+                                        range: interaction.1.range.unwrap_or(0.0),
+                                    };
+                                    attack_events.push(Attack {
+                                        weapon_mode: w, target_unit: target.e });
+                                }
                             }
                         }
                     }

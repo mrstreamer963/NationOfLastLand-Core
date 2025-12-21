@@ -4,8 +4,8 @@ use serde::{Serialize, Deserialize};
 pub enum EntityType {
     Waste,
     Trash,
-    Vehicle,
     Item,
     Base,
-    Floor
+    Floor,
+    Unit            //  некий юнит c активными слотами под предметы
 }

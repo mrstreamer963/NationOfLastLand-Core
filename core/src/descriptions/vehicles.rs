@@ -15,23 +15,17 @@ pub struct VehiclesContainer {
 }
 
 #[derive(Deserialize, Debug, Clone)]
-pub struct Slot {
-    pub id: String,
-    pub slot_type: String,
-    pub mount_point: String,
-}
-
-#[derive(Deserialize, Debug, Clone)]
 pub struct VehicleYaml {
     #[serde(rename = "type")]
     pub vehicle_type: String,
     pub max_speed: crate::defines::MinMax,
     pub max_health: crate::defines::MinMax,
-    #[serde(rename = "active_slot")]
-    pub active_slot: Vec<Slot>,
     pub reputation_cost_buy: f32,
     pub reputation_cost_sell: f32,
     pub reputation_cost_destroy: f32,
+    pub slots_type: String,
+    #[serde(default)]
+    pub inventory: Option<Vec<String>>,
 }
 
 /// Функция для получения транспортных средств из статических данных

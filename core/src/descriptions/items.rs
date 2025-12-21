@@ -1,6 +1,8 @@
-use serde::{Deserialize, Deserializer};
+use serde::Deserialize;
 use serde_yaml;
 use std::{collections::HashMap, error::Error};
+
+use crate::descriptions::InteractionDescriptions;
 
 /// Структура для десериализации файла items.yml (список)
 #[derive(Deserialize)]
@@ -8,55 +10,26 @@ struct ItemsYaml {
     items: Vec<ItemYaml>,
 }
 
-/// Структура для хранения предметов
-#[derive(Debug, Default)]
-pub struct ItemsContainer {
-    pub items: HashMap<String, ItemYaml>,
-}
-
-#[derive(Deserialize, Debug)]
+/// Структура для предметов
+#[derive(Deserialize, Debug, Clone)]
 pub struct ItemYaml {
     #[serde(rename = "type")]
     pub item_type: String,
-    #[serde(default, deserialize_with = "deserialize_marker")]
-    pub throwable: Option<bool>,
-    #[serde(default, deserialize_with = "deserialize_marker")]
-    pub takeable: Option<bool>,
+    pub tags: Option<Vec<String>>,
     #[serde(default)]
-    pub interactions: Vec<ItemInteraction>,
+    pub takeable: Option<bool>,
+    #[serde(default, deserialize_with = "crate::descriptions::interactions::deserialize_interactions")]
+    pub interactions: Option<InteractionDescriptions>,
 }
 
-#[derive(Deserialize, Debug)]
-pub struct ItemInteraction {
-    pub name: String,
-    #[serde(flatten)]
-    pub action: HashMap<String, f32>,
-}
-
-// Keeping this for compatibility, but it might not be used anymore
-#[derive(Deserialize, Debug)]
-pub struct ItemAttackTypeYaml {
-    #[serde(rename = "type")]
-    pub attack_type: String,
-    pub damage: f32,
-}
-
-fn deserialize_marker<'de, D>(deserializer: D) -> Result<Option<bool>, D::Error>
-where
-    D: Deserializer<'de>,
-{
-    // Since this function is only called if the field is present, return Some(true)
-    // Consume the value to complete the deserialization
-    let _ : Option<serde_yaml::Value> = Option::deserialize(deserializer)?;
-    Ok(Some(true))
-}
+pub type ItemsDescriptions = HashMap<String, ItemYaml>;
 
 /// Функция для получения предметов из статических данных
-pub fn load_items_static(yaml: &str) -> Result<ItemsContainer, Box<dyn Error>> {
-    let yaml_data: ItemsYaml = serde_yaml::from_str(yaml)?;
-    let mut items_map = HashMap::new();
-    for item in yaml_data.items {
-        items_map.insert(item.item_type.clone(), item);
+pub fn load_items_static(yaml: &str) -> Result<ItemsDescriptions, Box<dyn Error>> {
+    let data: ItemsYaml = serde_yaml::from_str(yaml)?;
+    let mut map = HashMap::new();
+    for item in data.items {
+        map.insert(item.item_type.clone(), item);
     }
-    Ok(ItemsContainer { items: items_map })
+    Ok(map)
 }

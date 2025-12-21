@@ -1,0 +1,8 @@
+floors:
+- type: FLOOR_EMPTY
+  max_health: [1.0, 1.0]
+- type: FLOOR_PARK
+  max_health: [1.0, 1.0]
+  interactions:
+    - name: REPAIR
+      REPAIR_FORCE: 2.0

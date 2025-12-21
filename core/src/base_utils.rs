@@ -1,6 +1,6 @@
 use crate::descriptions::Descriptions;
-use crate::modules::components::Owner;
-use crate::modules::markers::AddFloorEvent;
+use crate::modules::components::{Inventory, Owner};
+use crate::modules::markers::{AddFloorEvent, Item};
 use crate::world_utils::{get_base_type, spawn_entity};
 use hecs::{Entity, World};
 
@@ -52,4 +52,23 @@ pub fn add_floor_to_base(
     },));
 
     Ok(())
+}
+
+pub fn add_inventory(world: &mut World, entity: Entity, item_entity: Entity) -> Result<(), String> {
+    // Check if item_entity has Item marker
+    if world.get::<&Item>(item_entity).is_err() {
+        return Err("item_entity is not an item".to_string());
+    }
+
+    // Get Inventory component for entity
+    if let Ok(mut query) = world.query_one::<&mut Inventory>(entity) {
+        if let Some(inventory) = query.get() {
+            inventory.push(item_entity);
+            Ok(())
+        } else {
+            Err("Entity does not have Inventory component".to_string())
+        }
+    } else {
+        Err("Entity does not have Inventory component".to_string())
+    }
 }

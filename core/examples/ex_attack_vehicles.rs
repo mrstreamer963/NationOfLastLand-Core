@@ -4,7 +4,7 @@ use nation_of_last_land_core::modules::markers::{Alert, AttackEvent};
 
 
 fn main() {
-    let mut core = Core::new();
+    let mut core = Core::new(false);
 
     // Update the world until the vehicle attacks
     println!("Updating world to simulate vehicle movement and attacks:");

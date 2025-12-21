@@ -14,15 +14,7 @@ pub struct BaseYaml {
     #[serde(rename = "type")]
     pub base_type: String,
     pub reputation_cost_destroy: f32,
-    pub max_floors: u32,
-    pub interactions: Option<Vec<Interaction>>,
-}
-
-#[derive(Deserialize, Debug, Clone)]
-pub struct Interaction {
-    pub name: String,
-    #[serde(flatten)]
-    pub effects: HashMap<String, f64>,
+    pub max_floors: u32
 }
 
 pub fn load_bases_static(yaml: &str) -> Result<BasesDescriptions, Box<dyn Error>> {

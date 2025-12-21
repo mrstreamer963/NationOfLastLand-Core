@@ -2,10 +2,10 @@ use nation_of_last_land_core::Core;
 use nation_of_last_land_core::modules::components::{Owner, Pos};
 
 fn main() {
-    let mut core = Core::new();
+    let mut core = Core::new(false);
 
     // Создание базы
-    let base = core.create_base("BASE_MAIN", Pos { x: 0.0, y: 0.0 }).unwrap();
+    let base = core.create_base("BASE_MAIN", Pos::ZERO).unwrap();
 
     // Присоединение первого этажа к базе
     core.add_floor_to_base(base, "FLOOR_PARK").unwrap();

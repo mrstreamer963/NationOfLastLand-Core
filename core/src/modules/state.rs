@@ -10,7 +10,7 @@ pub struct State {
 impl Default for State {
     fn default() -> Self {
         Self {
-            reputation: Reputation(100.0),
+            reputation: Reputation(200.0),
             time: 0.0,
         }
     }

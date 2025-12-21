@@ -1,0 +1,30 @@
+units:
+- type: VEHICLE_CAR
+  max_speed: [0.1, 0.5]
+  max_health: [5.0, 20.0]
+  reputation_cost_buy: 100.0
+  reputation_cost_sell: 50.0
+  reputation_cost_destroy: -500.0
+  slots_type: SLOTS_VEHICLE_1
+  item_sets:
+    -
+      - ITEM_CLEANER
+- type: UNIT_TRASH
+  reputation_cost_destroy: 1.5
+  max_health: [1.0, 5.0]
+  resistance:
+    DMG_CLEAN: 0.1
+    DMG_ACID: 0.0
+- type: UNIT_WASTE
+  reputation_cost_destroy: 1.5
+  max_health: [1.0, 5.0]
+  slots_type: SLOTS_HUMAN
+  resistance:
+    DMG_CLEAN: 0.1
+    DMG_ACID: 0.0
+  item_sets:
+    -
+      - WEAPON_ACID # double weapon damage
+      - WEAPON_ACID
+    -
+      - WEAPON_ACID # single damage

@@ -8,6 +8,3 @@ bases:
   - type: BASE_OUTPOST
     reputation_cost_destroy: 5.0
     max_floors: 1
-    interactions:
-    - name: DEFEND
-      DMG_BULLET: 2.0

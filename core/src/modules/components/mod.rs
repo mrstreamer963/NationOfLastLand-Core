@@ -1,4 +1,3 @@
-
 mod spatial;
 mod reputation;
 mod health;
@@ -14,6 +13,8 @@ mod base_type;
 mod attached_items;
 mod attached_floors;
 mod unit_name;
+mod fraction;
+mod inventory;
 
 pub use spatial::{MaxSpeed, Pos, Rot, Velocity};
 pub use reputation::{Reputation, ReputationCost};
@@ -30,3 +31,5 @@ pub use base_type::BaseType;
 pub use attached_items::AttachedItems;
 pub use attached_floors::AttachedFloors;
 pub use unit_name::UnitName;
+pub use fraction::Fraction;
+pub use inventory::Inventory;

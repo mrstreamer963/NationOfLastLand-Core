@@ -1,0 +1,18 @@
+items:
+- type: WEAPON_ACID
+  tags: ["hand"]
+  interactions:
+    - name: ATTACK_ACID
+      DMG_ACID: 1.0
+      range: 10.0
+- type: ITEM_BRUSH
+  takeable: ~
+  tags: ["hand"]
+  interactions:
+    - name: ATTACK_CLEAN
+      DMG_CLEAN: 1.0
+- type: ITEM_CLEANER
+  tags: ["turret", "hand"]
+  interactions:
+    - name: ATTACK_CLEAN
+      DMG_CLEAN: 1.0

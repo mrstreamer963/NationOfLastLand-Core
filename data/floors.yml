@@ -1,7 +1,0 @@
-floors:
-  - type: FLOOR_EMPTY
-  - type: FLOOR_PARK
-    interactions:
-      - name: REPAIR
-        REPAIR_FORCE: 2.0
-  - type: FLOOR_ENTERANCE

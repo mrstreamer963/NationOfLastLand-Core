@@ -1,6 +1,7 @@
 use hecs::{World, Entity};
-use crate::modules::{components::{BaseType, Guid, Owner, Target, WeaponMode}, markers::{AttackEvent, IsTargetNear, IsWaitingTarget}};
+use crate::modules::{components::{AttachedItems, BaseType, Guid, Inventory, Owner, Target, WeaponMode}, markers::{AttackEvent, IsTargetNear, IsWaitingTarget}};
 use crate::internal_data::{add_guid_entity, get_guid_by_entity, remove_by_guid};
+use std::collections::HashSet;
 
 #[derive(Clone, Debug)]
 pub struct Attack {
@@ -66,6 +67,9 @@ pub fn remove_entity(world: &mut World, entity: Entity) -> Result<(), String> {
         return Err("Entity not found".to_string());
     }
 
+    // Collect entities to remove: owned entities, inventory items, attached items
+    let mut entities_to_remove: HashSet<Entity> = HashSet::new();
+
     // Remove all owned entities
     let owned_entities: Vec<Entity> = world.query::<&Owner>().iter().filter_map(|(e, owner)| {
         if owner.e == entity {
@@ -74,9 +78,23 @@ pub fn remove_entity(world: &mut World, entity: Entity) -> Result<(), String> {
             None
         }
     }).collect();
+    entities_to_remove.extend(owned_entities);
 
-    for owned in owned_entities {
-        remove_entity(world, owned)?;
+    // Remove inventory items
+    if let Ok(inventory) = world.get::<&Inventory>(entity) {
+        entities_to_remove.extend(&inventory.0);
+    }
+
+    // Remove attached items
+    if let Ok(attached_items) = world.get::<&AttachedItems>(entity) {
+        for (_slot, item) in attached_items.0.iter() {
+            entities_to_remove.insert(*item);
+        }
+    }
+
+    // Remove collected entities
+    for e in entities_to_remove {
+        remove_entity(world, e)?;
     }
 
     // Remove from internal data maps

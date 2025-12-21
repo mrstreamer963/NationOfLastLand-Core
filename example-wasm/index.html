@@ -270,15 +270,7 @@
                     }
                     const x = unit.Pos.x * scale;
                     const y = unit.Pos.y * scale;
-                    if (unit.EntityType === 'Vehicle') {
-                        ctx.beginPath();
-                        ctx.arc(x, y, 15, 0, 2 * Math.PI);
-                        ctx.fillStyle = 'blue';
-                        ctx.fill();
-                        ctx.strokeStyle = 'black';
-                        ctx.stroke();
-                        // console.log(`Vehicle drawn at: ${x}, ${y}`);
-                    } else if (unit.EntityType === 'Base') {
+                    if (unit.EntityType === 'Base') {
                         ctx.beginPath();
                         ctx.arc(x, y, 15, 0, 2 * Math.PI);
                         ctx.fillStyle = 'lightblue';
@@ -300,6 +292,31 @@
                         ctx.lineWidth = 1;
                         ctx.strokeRect(x, y, 20, 20);
                         // console.log(`Waste drawn at: ${x}, ${y}`);
+                    } else if (unit.EntityType === 'Unit') {
+                        if (unit.BaseType === 'VEHICLE_CAR') {
+                            ctx.beginPath();
+                            ctx.arc(x, y, 15, 0, 2 * Math.PI);
+                            ctx.fillStyle = 'blue';
+                            ctx.fill();
+                            ctx.strokeStyle = 'black';
+                            ctx.stroke();
+                        // console.log(`Vehicle drawn at: ${x}, ${y}`);
+                        }
+                        else if (unit.BaseType === 'UNIT_TRASH') {
+                            ctx.fillStyle = 'red';
+                            ctx.fillRect(x, y, 20, 20);
+                            ctx.strokeStyle = 'black';
+                            ctx.lineWidth = 1;
+                            ctx.strokeRect(x, y, 20, 20);
+                            // console.log(`UNIT_TRASH drawn at: ${x}, ${y}`);
+                        } else if (unit.BaseType === 'UNIT_WASTE') {
+                            ctx.fillStyle = 'orange';
+                            ctx.fillRect(x, y, 20, 20);
+                            ctx.strokeStyle = 'black';
+                            ctx.lineWidth = 1;
+                            ctx.strokeRect(x, y, 20, 20);
+                            // console.log(`UNIT_WASTE drawn at: ${x}, ${y}`);
+                        }
                     }
                 });
             }

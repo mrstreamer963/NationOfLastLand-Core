@@ -1,0 +1,24 @@
+slots_types:
+  - SLOTS_HUMAN:
+    - id: "hand_left"
+      slot_tags: ["hand"]
+      mount_point: "human_front_left"
+    - id: "hand_right"
+      slot_tags: ["hand"]
+      mount_point: "human_front_right"
+    - id: "chest"
+      slot_tags: ["chest"]
+      mount_point: "human_chest"
+    - id: "head"
+      slot_tags: ["head"]
+      mount_point: "human_head"
+  - SLOTS_VEHICLE_1:
+    - id: "front_left"
+      slot_tags: ["turret"]
+      mount_point: "turret_front_left"
+    - id: "front_rigth"
+      slot_tags: ["turret"]
+      mount_point: "turret_front_right"
+    - id: "roof"
+      slot_tags: ["turret", "auxiliary"]
+      mount_point: "roof_mount"

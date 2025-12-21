@@ -6,7 +6,7 @@ pub struct MapSize {
     pub height: i32,
 }
 
-#[derive(Serialize, Debug, Clone, Copy)]
+#[derive(Serialize, Debug, Clone, Copy, Default)]
 pub struct MinMax {
     pub min: f32,
     pub max: f32,

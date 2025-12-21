@@ -2,7 +2,8 @@ use serde::Deserialize;
 use serde_yaml;
 use std::{collections::HashMap, error::Error};
 
-pub type FloorsDescriptions = HashMap<String, FloorYaml>;
+use crate::defines::MinMax;
+use crate::descriptions::InteractionDescriptions;
 
 #[derive(Deserialize)]
 pub struct FloorsYaml {
@@ -13,15 +14,12 @@ pub struct FloorsYaml {
 pub struct FloorYaml {
     #[serde(rename = "type")]
     pub floor_type: String,
-    pub interactions: Option<Vec<Interaction>>,
+    pub max_health: MinMax,
+    #[serde(default, deserialize_with = "crate::descriptions::interactions::deserialize_interactions")]
+    pub interactions: Option<InteractionDescriptions>,
 }
 
-#[derive(Deserialize, Debug, Clone)]
-pub struct Interaction {
-    pub name: String,
-    #[serde(flatten)]
-    pub effects: HashMap<String, f64>,
-}
+pub type FloorsDescriptions = HashMap<String, FloorYaml>;
 
 pub fn load_floors_static(yaml: &str) -> Result<FloorsDescriptions, Box<dyn Error>> {
     let data: FloorsYaml = serde_yaml::from_str(yaml)?;

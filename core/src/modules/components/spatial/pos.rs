@@ -7,6 +7,7 @@ pub struct Pos {
 }
 
 impl Pos {
+    pub const ZERO: Pos = Pos { x: 0.0, y: 0.0 };
     pub fn find_nearest_position(&self, positions: &[Pos]) -> Option<Pos> {
     let mut nearest: Option<Pos> = None;
     let mut min_distance_squared = f32::INFINITY;
