@@ -141,7 +141,7 @@ impl Core {
 
     pub fn update(&mut self, delta: f64) -> Result<(), String> {
 
-        do_remove_dead(&mut self.world, &mut self.s);
+        do_remove_dead(&mut self.world, &mut self.s, &self.descriptions);
 
         do_interaction(&mut self.world, &self.descriptions);
         attack_process(&mut self.world);
