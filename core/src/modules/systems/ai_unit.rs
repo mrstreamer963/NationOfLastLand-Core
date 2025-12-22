@@ -1,7 +1,7 @@
 use hecs::{Entity, World};
 use crate::descriptions::Descriptions;
-use crate::modules::components::{Inventory, AttachedItems, BaseType, Guid, Pos, Target, Fraction};
-use crate::modules::markers::{Unit, Alert, IsMoving, IsWaitingTarget};
+use crate::modules::components::{Inventory, AttachedItems, BaseType, Guid, Pos, Target, Fraction, Health};
+use crate::modules::markers::{Unit, Alert, IsMoving, IsWaitingTarget, Floor};
 use crate::world_utils::attach_entity;
 use std::collections::HashSet;
 
@@ -91,35 +91,65 @@ pub fn equip_items_from_inventory(world: &mut World, descriptions: &Descriptions
     }
 }
 
-fn set_target_to_waiting_units(world: &mut World, target_infos: &Vec<(hecs::Entity, Guid, Pos)>, assigned_trash: &mut HashSet<hecs::Entity>) {
+fn set_target_to_waiting_units(world: &mut World, target_infos: &Vec<(hecs::Entity, Guid, Pos)>, floor_infos: &Vec<(hecs::Entity, Guid, Pos, Fraction)>, assigned_trash: &mut HashSet<hecs::Entity>) {
     let mut waiting_entities: Vec<(hecs::Entity, Target)> = Vec::new();
 
     for (entity, (pos, _unit, _waiting)) in
         world.query::<(&Pos, &Unit, &IsWaitingTarget)>()
         .iter()
     {
+        // Check if unit is damaged
+        let is_damaged = if let Ok(health) = world.get::<&Health>(entity) {
+            health.current < health.max
+        } else {
+            false
+        };
+
         let mut min_dist_sq = f32::INFINITY;
         let mut nearest = None;
-        for &(t_entity, t_guid, t_pos) in target_infos {
-            if assigned_trash.contains(&t_entity) || t_entity == entity {
-                continue;
-            }
-            // Skip targets with the same faction
-            if let (Ok(unit_faction), Ok(target_faction)) = (world.get::<&Fraction>(entity), world.get::<&Fraction>(t_entity)) {
-                if *unit_faction == *target_faction {
-                    continue;
+
+        if is_damaged {
+            // Seek nearest allied floor
+            if let Ok(unit_faction) = world.get::<&Fraction>(entity) {
+                for &(f_entity, f_guid, f_pos, f_fraction) in floor_infos {
+                    if f_fraction != *unit_faction {
+                        continue;
+                    }
+                    let dx = f_pos.x - pos.x;
+                    let dy = f_pos.y - pos.y;
+                    let dist_sq = dx * dx + dy * dy;
+                    if dist_sq < min_dist_sq {
+                        min_dist_sq = dist_sq;
+                        nearest = Some((f_guid, f_entity));
+                    }
                 }
             }
-            let dx = t_pos.x - pos.x;
-            let dy = t_pos.y - pos.y;
-            let dist_sq = dx * dx + dy * dy;
-            if dist_sq < min_dist_sq {
-                min_dist_sq = dist_sq;
-                nearest = Some((t_guid, t_entity));
+        } else {
+            // Seek nearest enemy target
+            for &(t_entity, t_guid, t_pos) in target_infos {
+                if assigned_trash.contains(&t_entity) || t_entity == entity {
+                    continue;
+                }
+                // Skip targets with the same faction
+                if let (Ok(unit_faction), Ok(target_faction)) = (world.get::<&Fraction>(entity), world.get::<&Fraction>(t_entity)) {
+                    if *unit_faction == *target_faction {
+                        continue;
+                    }
+                }
+                let dx = t_pos.x - pos.x;
+                let dy = t_pos.y - pos.y;
+                let dist_sq = dx * dx + dy * dy;
+                if dist_sq < min_dist_sq {
+                    min_dist_sq = dist_sq;
+                    nearest = Some((t_guid, t_entity));
+                }
             }
         }
+
         if let Some((ng, ne)) = nearest {
-            assigned_trash.insert(ne);
+            if !is_damaged {
+                assigned_trash.insert(ne);
+            }
             let target = Target { e: ne, guid: ng };
             waiting_entities.push((entity, target));
         }
@@ -132,13 +162,20 @@ fn set_target_to_waiting_units(world: &mut World, target_infos: &Vec<(hecs::Enti
     }
 }
 
-fn reassign_closer_targets_for_moving_units(world: &mut World, trash_infos: &Vec<(hecs::Entity, Guid, Pos)>, assigned_trash: &mut HashSet<hecs::Entity>) {
+fn reassign_closer_targets_for_moving_units(world: &mut World, trash_infos: &Vec<(hecs::Entity, Guid, Pos)>, floor_infos: &Vec<(hecs::Entity, Guid, Pos, Fraction)>, assigned_trash: &mut HashSet<hecs::Entity>) {
     let mut reassignments: Vec<(hecs::Entity, Target, hecs::Entity)> = Vec::new();
 
     for (entity, (pos, _unit, target, _moving)) in
         world.query::<(&Pos, &Unit, &Target, &IsMoving)>()
         .iter()
     {
+        // Check if unit is damaged
+        let is_damaged = if let Ok(health) = world.get::<&Health>(entity) {
+            health.current < health.max
+        } else {
+            false
+        };
+
         if let Ok(mut query) = world.query_one::<(&Pos,)>(target.e) {
             if let Some((current_pos,)) = query.get() {
                 let dx_current = current_pos.x - pos.x;
@@ -147,27 +184,50 @@ fn reassign_closer_targets_for_moving_units(world: &mut World, trash_infos: &Vec
 
                 let mut min_dist_sq = f32::INFINITY;
                 let mut nearest = None;
-                for &(t_entity, t_guid, t_pos) in trash_infos {
-                    if assigned_trash.contains(&t_entity) || t_entity == entity {
-                        continue;
-                    }
-                    // Skip targets with the same faction
-                    if let (Ok(unit_faction), Ok(target_faction)) = (world.get::<&Fraction>(entity), world.get::<&Fraction>(t_entity)) {
-                        if *unit_faction == *target_faction {
-                            continue;
+
+                if is_damaged {
+                    // Seek closer allied floor
+                    if let Ok(unit_faction) = world.get::<&Fraction>(entity) {
+                        for &(f_entity, f_guid, f_pos, f_fraction) in floor_infos {
+                            if f_fraction != *unit_faction {
+                                continue;
+                            }
+                            let dx = f_pos.x - pos.x;
+                            let dy = f_pos.y - pos.y;
+                            let dist_sq = dx * dx + dy * dy;
+                            if dist_sq < min_dist_sq && dist_sq < current_dist_sq {
+                                min_dist_sq = dist_sq;
+                                nearest = Some((f_guid, f_entity));
+                            }
                         }
                     }
-                    let dx = t_pos.x - pos.x;
-                    let dy = t_pos.y - pos.y;
-                    let dist_sq = dx * dx + dy * dy;
-                    if dist_sq < min_dist_sq && dist_sq < current_dist_sq {
-                        min_dist_sq = dist_sq;
-                        nearest = Some((t_guid, t_entity));
+                } else {
+                    // Seek closer enemy target
+                    for &(t_entity, t_guid, t_pos) in trash_infos {
+                        if assigned_trash.contains(&t_entity) || t_entity == entity {
+                            continue;
+                        }
+                        // Skip targets with the same faction
+                        if let (Ok(unit_faction), Ok(target_faction)) = (world.get::<&Fraction>(entity), world.get::<&Fraction>(t_entity)) {
+                            if *unit_faction == *target_faction {
+                                continue;
+                            }
+                        }
+                        let dx = t_pos.x - pos.x;
+                        let dy = t_pos.y - pos.y;
+                        let dist_sq = dx * dx + dy * dy;
+                        if dist_sq < min_dist_sq && dist_sq < current_dist_sq {
+                            min_dist_sq = dist_sq;
+                            nearest = Some((t_guid, t_entity));
+                        }
                     }
                 }
+
                 if let Some((ng, ne)) = nearest {
-                    assigned_trash.remove(&target.e);
-                    assigned_trash.insert(ne);
+                    if !is_damaged {
+                        assigned_trash.remove(&target.e);
+                        assigned_trash.insert(ne);
+                    }
                     let new_target = Target { e: ne, guid: ng };
                     reassignments.push((entity, new_target, target.e));
                 }
@@ -191,9 +251,14 @@ pub fn ai_unit_system(world: &mut World, descriptions: &Descriptions) {
     for (entity, (pos, _alert, guid)) in world.query::<(&Pos, &Unit, &Guid)>().iter() {
         target_infos.push((entity, *guid, *pos));
     }
-    
+
     for (entity, (pos, _alert, guid)) in world.query::<(&Pos, &Alert, &Guid)>().iter() {
         target_infos.push((entity, *guid, *pos));
+    }
+
+    let mut floor_infos: Vec<(hecs::Entity, Guid, Pos, Fraction)> = Vec::new();
+    for (entity, (pos, _floor, guid, fraction)) in world.query::<(&Pos, &Floor, &Guid, &Fraction)>().iter() {
+        floor_infos.push((entity, *guid, *pos, *fraction));
     }
 
     let mut assigned_entity: HashSet<hecs::Entity> = HashSet::new();
@@ -201,6 +266,6 @@ pub fn ai_unit_system(world: &mut World, descriptions: &Descriptions) {
         assigned_entity.insert(target.e);
     }
 
-    set_target_to_waiting_units(world, &target_infos, &mut assigned_entity);
-    reassign_closer_targets_for_moving_units(world, &target_infos, &mut assigned_entity);
+    set_target_to_waiting_units(world, &target_infos, &floor_infos, &mut assigned_entity);
+    reassign_closer_targets_for_moving_units(world, &target_infos, &floor_infos, &mut assigned_entity);
 }
