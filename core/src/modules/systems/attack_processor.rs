@@ -1,7 +1,8 @@
 use hecs::{Entity, World};
 
-use crate::modules::components::{Health, Target, WeaponMode, Resistance};
+use crate::modules::components::{Health, Target, WeaponMode, Resistance, DamageType};
 use crate::modules::markers::{AttackEvent, IsDead};
+use crate::world_utils::reset_target;
 
 pub fn attack_process(world: &mut World) {
     // Collect attack events to process and remove them later to avoid borrowing issues
@@ -11,10 +12,13 @@ pub fn attack_process(world: &mut World) {
         .map(|(e, (target, weapon_mode, _))| (e, target.clone(), weapon_mode.clone()))
         .collect();
 
+    let mut entities_to_reset = Vec::new();
+
     for (e, target, weapon_mode) in attack_events {
         // println!("attack_events...");
         // Get the target's health and resistance
         let mut should_add_dead_marker = false;
+        let mut healed_to_full = false;
         if let Ok(mut query) = world.query_one::<(&mut Health, Option<&Resistance>)>(target.e) {
             if let Some((health, resistance_opt)) = query.get() {
                 let mut damage = weapon_mode.damage;
@@ -39,6 +43,11 @@ pub fn attack_process(world: &mut World) {
                     health.current = health.max;
                 }
 
+                // If healed to full health, mark for reset
+                if weapon_mode.damage_type == DamageType::RepairForce && health.current == health.max {
+                    healed_to_full = true;
+                }
+
                 // Check if dead
                 if health.current == 0.0 {
                     should_add_dead_marker = true;
@@ -51,7 +60,17 @@ pub fn attack_process(world: &mut World) {
             world.insert_one(target.e, IsDead {}).unwrap();
         }
 
+        // If healed to full, mark for reset
+        if healed_to_full {
+            entities_to_reset.push(target.e);
+        }
+
         // Remove the attack event entity after processing
         world.despawn(e).unwrap();
+    }
+
+    // Reset targets for fully healed units
+    for entity in entities_to_reset {
+        reset_target(world, entity);
     }
 }

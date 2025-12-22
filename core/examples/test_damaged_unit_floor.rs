@@ -20,7 +20,7 @@ fn main() {
     world.insert_one(unit_red, IsWaitingTarget {}).unwrap();
 
     // Create a floor of Red faction nearby
-    let floor_red = core.create_floor("FLOOR_PARK", Pos { x: 1.0, y: 1.0 }, Fraction::Red).unwrap();
+    let floor_red = core.create_floor("FLOOR_PARK", Pos { x: 0.05, y: 0.05 }, Fraction::Red).unwrap();
 
     // Create an enemy alert far away
     let alert_enemy = core.create_trash().unwrap();

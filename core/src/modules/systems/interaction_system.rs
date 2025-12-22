@@ -2,7 +2,7 @@ use hecs::World;
 
 use crate::{
     descriptions::Descriptions,
-    modules::{components::{AttachedItems, DamageType, Fraction, Target, WeaponMode}, markers::IsTargetNear},
+    modules::{components::{AttachedItems, DamageType, Fraction, Pos, Target, WeaponMode}, markers::IsTargetNear},
     world_utils::{Attack, get_base_type, reset_target, spawn_attack_event}
 };
 
@@ -37,23 +37,35 @@ pub fn do_interaction(world: &mut World, descriptions: &Descriptions) {
             };
 
             if is_allied_floor {
-                println!("Applying floor repair to unit");
+                // Check distance to floor
+                let distance = if let (Ok(unit_pos), Ok(floor_pos)) = (world.get::<&Pos>(entity), world.get::<&Pos>(target.e)) {
+                    let dx = unit_pos.x - floor_pos.x;
+                    let dy = unit_pos.y - floor_pos.y;
+                    (dx * dx + dy * dy).sqrt()
+                } else {
+                    f32::INFINITY
+                };
+
+                println!("Applying floor repair to unit at distance {}", distance);
                 // Apply floor's interactions to the unit (attacker)
                 if let Ok(floor_base_type) = get_base_type(world, target.e) {
                     if let Some(floor_desc) = descriptions.units.get(&floor_base_type) {
                         if let Some(interactions) = &floor_desc.interactions {
                             for interaction in interactions {
-                                for (damage_type_str, damage) in interaction.1.effects.iter() {
-                                    if let Some(dt) = DamageType::from_str(damage_type_str) {
-                                        let w = WeaponMode {
-                                            damage_type: dt,
-                                            damage: *damage as f32,
-                                            range: interaction.1.range.unwrap_or(0.0),
-                                        };
-                                        println!("Creating repair event: {} {}", damage_type_str, damage);
-                                        // Create attack event where target is the unit (attacker)
-                                        attack_events.push(Attack {
-                                            weapon_mode: w, target_unit: entity });
+                                let interaction_range = interaction.1.range.unwrap_or(0.0);
+                                if distance <= interaction_range {
+                                    for (damage_type_str, damage) in interaction.1.effects.iter() {
+                                        if let Some(dt) = DamageType::from_str(damage_type_str) {
+                                            let w = WeaponMode {
+                                                damage_type: dt,
+                                                damage: *damage as f32,
+                                                range: interaction_range,
+                                            };
+                                            println!("Creating repair event: {} {}", damage_type_str, damage);
+                                            // Create attack event where target is the unit (attacker)
+                                            attack_events.push(Attack {
+                                                weapon_mode: w, target_unit: entity });
+                                        }
                                     }
                                 }
                             }
