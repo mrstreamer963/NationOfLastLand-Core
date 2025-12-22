@@ -15,7 +15,7 @@ pub use damage_types::{DamageTypesYaml, load_damage_types_static};
 pub use slot::Slot;
 pub use alerts::{AlertsDescriptions, load_alerts_static};
 pub use bases::{BasesDescriptions, load_bases_static};
-pub use floors::{load_floors_static};
+
 pub use descriptions::Descriptions;
 pub use active_slots::{ActiveSlot, ActiveSlots, SlotType};
 pub use slots_tags::{SlotTagsYaml, load_slot_tags_static};

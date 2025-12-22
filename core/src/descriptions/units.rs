@@ -23,6 +23,8 @@ pub struct UnitYaml {
     pub resistance: Option<HashMap<String, f64>>,
     #[serde(default)]
     pub item_sets: Option<Vec<Vec<String>>>,
+    #[serde(default, deserialize_with = "crate::descriptions::interactions::deserialize_interactions")]
+    pub interactions: Option<crate::descriptions::InteractionDescriptions>,
     // Поля для транспортных средств
     #[serde(default)]
     pub max_speed: Option<crate::defines::MinMax>,

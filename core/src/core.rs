@@ -1,5 +1,5 @@
 use crate::base_utils::add_floor_to_base;
-use crate::descriptions::{Descriptions, load_alerts_static, load_bases_static, load_damage_types_static, load_floors_static, load_slot_tags_static, load_slots_types_static, load_items_static, load_units_static};
+use crate::descriptions::{Descriptions, load_alerts_static, load_bases_static, load_damage_types_static, load_slot_tags_static, load_slots_types_static, load_items_static, load_units_static};
 use crate::exporter::{export_entity_to_json, export_to_json};
 use crate::internal_data::get_entity_by_guid;
 use crate::modules::components::{AttachedItems, Fraction, Guid, Pos};
@@ -274,8 +274,13 @@ impl Core {
 
         self.descriptions.alerts = load_alerts_static(ALERTS_YAML)?;
         self.descriptions.bases = load_bases_static(BASES_YAML)?;
-        self.descriptions.units = load_units_static(UNITS_YAML)?;
-        self.descriptions.floors = load_floors_static(FLOORS_YAML)?;
+
+        // Load units
+        let mut units = load_units_static(UNITS_YAML)?;
+        // Load floors as units and merge
+        let floors = load_units_static(FLOORS_YAML)?;
+        units.extend(floors);
+        self.descriptions.units = units;
 
         self.descriptions.validate_slot_tags()?;
         self.descriptions.validate_attack_types()?;

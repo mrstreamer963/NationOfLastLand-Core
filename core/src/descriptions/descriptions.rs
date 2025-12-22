@@ -2,8 +2,6 @@
 pub use super::*;
 use std::{collections::{HashMap, HashSet}, error::Error};
 
-use super::floors::FloorYaml;
-
 /// Компонент для хранения базовых описаний различных юнитов, алертов и предметов
 #[derive(Debug, Default)]
 pub struct Descriptions {
@@ -17,8 +15,6 @@ pub struct Descriptions {
     pub alerts: AlertsDescriptions,
     /// Описания баз, где ключ - тип базы, значение - структура с данными базы
     pub bases: BasesDescriptions,
-    /// Описания этажей, где ключ - тип этажа, значение - структура с данными этажа
-    pub floors: HashMap<String, FloorYaml>,
     /// Предметы, где ключ - название предмета, значение - данные предмета
     pub items: HashMap<String, ItemYaml>,
     /// Юниты и транспортные средства, где ключ - тип юнита/транспорта, значение - данные

@@ -1,4 +1,4 @@
-floors:
+units:
 - type: FLOOR_EMPTY
   max_health: [1.0, 1.0]
 - type: FLOOR_PARK

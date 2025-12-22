@@ -18,7 +18,7 @@ pub fn can_attach_floor_to_base(
         .ok_or(format!("Base type '{}' not found in descriptions", base_type))?;
 
     // Check if floor type exists in descriptions
-    if !descriptions.floors.contains_key(floor_type) {
+    if !descriptions.units.contains_key(floor_type) {
         return Err(format!("Floor type '{}' not found in descriptions", floor_type));
     }
 
