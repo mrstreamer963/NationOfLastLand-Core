@@ -1,5 +1,4 @@
 pub mod damage_types;
-pub mod vehicles;
 pub mod alerts;
 pub mod bases;
 pub mod floors;
