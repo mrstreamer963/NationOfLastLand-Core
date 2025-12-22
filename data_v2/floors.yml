@@ -1,8 +1,14 @@
 units:
 - type: FLOOR_EMPTY
   max_health: [1.0, 1.0]
+  reputation_cost_buy: 100.0
+  reputation_cost_sell: 50.0
+  reputation_cost_destroy: -500.0
 - type: FLOOR_PARK
   max_health: [1.0, 1.0]
+  reputation_cost_buy: 10.0
+  reputation_cost_sell: 1.0
+  reputation_cost_destroy: -500.0
   interactions:
     - name: REPAIR
       REPAIR_FORCE: 2.0

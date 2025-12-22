@@ -105,6 +105,20 @@ impl Core {
         }
     }
 
+    pub fn create_floor(&mut self, floor_key: &str, pos: Pos, faction: Fraction) -> Result<Entity, String> {
+        let floor_data = self.descriptions.units.get(floor_key)
+            .ok_or(format!("Floor '{}' not found in descriptions", floor_key))?;
+
+        let cost = floor_data.reputation_cost_buy.ok_or(format!("Floor '{}' has no buy cost", floor_key))?;
+        if self.s.reputation.0 >= cost {
+            self.s.reputation.0 -= cost;
+            let e = create_unit_from_description(&mut self.world, &self.descriptions, floor_key, pos, faction, &self.r).unwrap();
+            Ok(e)
+        } else {
+            Err(format!("Not enough reputation to create floor '{}'. Required: {}, available: {}", floor_key, cost, self.s.reputation.0))
+        }
+    }
+
     pub fn create_item(&mut self, item_key: &str, pos: Pos) -> Result<Entity, String> {
         create_item_from_description(&mut self.world, &self.descriptions, item_key, pos)
     }
