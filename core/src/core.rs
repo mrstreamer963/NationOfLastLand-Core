@@ -270,12 +270,12 @@ impl Core {
         self.descriptions.slot_tags = load_slot_tags_static(SLOTS_TAGS_YAML)?;
         self.descriptions.slots_types = load_slots_types_static(SLOTS_TYPES_YAML)?;
         self.descriptions.damage_types = load_damage_types_static(DAMAGE_TYPES_YAML)?;
-        self.descriptions.floors = load_floors_static(FLOORS_YAML)?;
         self.descriptions.items = load_items_static(ITEMS_YAML)?;
 
         self.descriptions.alerts = load_alerts_static(ALERTS_YAML)?;
         self.descriptions.bases = load_bases_static(BASES_YAML)?;
         self.descriptions.units = load_units_static(UNITS_YAML)?;
+        self.descriptions.floors = load_floors_static(FLOORS_YAML)?;
 
         self.descriptions.validate_slot_tags()?;
         self.descriptions.validate_attack_types()?;
