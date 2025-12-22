@@ -299,6 +299,8 @@ impl Core {
     // self.create_unit("UNIT_TRASH", Pos { x: 1.0, y: 1.0 }, Fraction::Red).unwrap();
     // self.create_unit("UNIT_WASTE", Pos { x: 4.0, y: 4.0 }, Fraction::Red).unwrap();
 
+    self.create_unit("FLOOR_PARK", Pos { x: 1.0, y: 1.0 }, Fraction::Neutral).unwrap();
+
     for _ in 0..1 {
         let _vehicle = self.create_vehicle("VEHICLE_CAR", Pos { x: 5.0, y: 5.0 }, Fraction::Neutral)
             .expect("Failed to create vehicle from YAML");
