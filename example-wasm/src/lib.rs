@@ -90,6 +90,84 @@ pub fn create_base(base_key: &str, x: f32, y: f32) -> Result<String, JsValue> {
     })
 }
 
+// Function to create a new unit
+#[wasm_bindgen]
+pub fn create_unit(unit_key: &str, x: f32, y: f32, fraction: &str) -> Result<String, JsValue> {
+    use nation_of_last_land_core::modules::components::Fraction as CoreFraction;
+
+    let core_fraction = match fraction.to_uppercase().as_str() {
+        "RED" => CoreFraction::Red,
+        "BLUE" => CoreFraction::Blue,
+        "NEUTRAL" => CoreFraction::Neutral,
+        _ => return Err(JsValue::from_str("Invalid fraction. Use RED, BLUE, or NEUTRAL")),
+    };
+
+    CORE.with(|core| {
+        let result = core.borrow_mut().create_unit(unit_key, Pos { x, y }, core_fraction);
+
+        match result {
+            Ok(_unit) => Ok(format!("Unit '{}' created at ({:.2}, {:.2}) with fraction {}", unit_key, x, y, fraction)),
+            Err(e) => Err(JsValue::from_str(&e)),
+        }
+    })
+}
+
+// Function to create a new floor
+#[wasm_bindgen]
+pub fn create_floor(floor_key: &str, x: f32, y: f32, fraction: &str) -> Result<String, JsValue> {
+    use nation_of_last_land_core::modules::components::Fraction as CoreFraction;
+
+    let core_fraction = match fraction.to_uppercase().as_str() {
+        "RED" => CoreFraction::Red,
+        "BLUE" => CoreFraction::Blue,
+        "NEUTRAL" => CoreFraction::Neutral,
+        _ => return Err(JsValue::from_str("Invalid fraction. Use RED, BLUE, or NEUTRAL")),
+    };
+
+    CORE.with(|core| {
+        let result = core.borrow_mut().create_floor(floor_key, Pos { x, y }, core_fraction);
+
+        match result {
+            Ok(_floor) => Ok(format!("Floor '{}' created at ({:.2}, {:.2}) with fraction {}", floor_key, x, y, fraction)),
+            Err(e) => Err(JsValue::from_str(&e)),
+        }
+    })
+}
+
+// Function to damage a unit by GUID
+#[wasm_bindgen]
+pub fn damage_unit(guid_str: &str, damage: f32) -> Result<String, JsValue> {
+    use nation_of_last_land_core::modules::components::{Guid, Health};
+    use uuid::Uuid;
+
+    CORE.with(|core| {
+        let uuid = Uuid::parse_str(guid_str).map_err(|_| JsValue::from_str("Invalid GUID format"))?;
+        let guid = Guid(uuid);
+
+        let mut core_mut = core.borrow_mut();
+        let world = core_mut.get_world();
+
+        // Find the entity and damage it in one go
+        let mut found = false;
+        let mut result_msg = String::new();
+
+        for (entity, (entity_guid, mut health)) in world.query::<(&Guid, &mut Health)>().iter() {
+            if *entity_guid == guid {
+                health.current = (health.current - damage).max(0.0);
+                result_msg = format!("Unit damaged by {:.1}, current health: {:.1}/{:.1}", damage, health.current, health.max);
+                found = true;
+                break;
+            }
+        }
+
+        if found {
+            Ok(result_msg)
+        } else {
+            Err(JsValue::from_str("Unit not found or has no health component"))
+        }
+    })
+}
+
 // Function to sell a vehicle
 #[wasm_bindgen]
 pub fn sell_vehicle(guid_str: &str) -> Result<String, JsValue> {

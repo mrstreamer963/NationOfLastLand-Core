@@ -128,6 +128,33 @@
                 <input type="number" id="baseY" placeholder="Y" value="10.0" step="0.1" style="width: 80px; margin-right: 10px;">
                 <button onclick="createBase()">Create Base</button>
             </div>
+            <div style="margin: 10px 0;">
+                <input type="text" id="unitType" placeholder="UNIT_TRASH" value="UNIT_TRASH" style="margin-right: 10px;">
+                <input type="number" id="unitX" placeholder="X" value="2.0" step="0.1" style="width: 80px; margin-right: 10px;">
+                <input type="number" id="unitY" placeholder="Y" value="2.0" step="0.1" style="width: 80px; margin-right: 10px;">
+                <select id="unitFraction" style="margin-right: 10px;">
+                    <option value="RED">Red</option>
+                    <option value="BLUE">Blue</option>
+                    <option value="NEUTRAL">Neutral</option>
+                </select>
+                <button onclick="createUnit()">Create Unit</button>
+            </div>
+            <div style="margin: 10px 0;">
+                <input type="text" id="floorType" placeholder="FLOOR_PARK" value="FLOOR_PARK" style="margin-right: 10px;">
+                <input type="number" id="floorX" placeholder="X" value="8.0" step="0.1" style="width: 80px; margin-right: 10px;">
+                <input type="number" id="floorY" placeholder="Y" value="8.0" step="0.1" style="width: 80px; margin-right: 10px;">
+                <select id="floorFraction" style="margin-right: 10px;">
+                    <option value="RED">Red</option>
+                    <option value="BLUE">Blue</option>
+                    <option value="NEUTRAL">Neutral</option>
+                </select>
+                <button onclick="createFloor()">Create Floor</button>
+            </div>
+            <div style="margin: 10px 0;">
+                <input type="text" id="damageGuid" placeholder="Unit GUID" style="margin-right: 10px;">
+                <input type="number" id="damageAmount" placeholder="Damage" value="0.5" step="0.1" style="width: 80px; margin-right: 10px;">
+                <button onclick="damageUnit()">Damage Unit</button>
+            </div>
             <div id="canvasContainer"></div>
         </div>
         <div id="machines-tab" class="tab-content">
@@ -150,7 +177,7 @@
     </div>
 
     <script type="module">
-        import init, { get_core_info, async_example, get_world_data, update_world, create_vehicle, create_base, can_create_vehicle, sell_vehicle } from './pkg/example_wasm.js';
+        import init, { get_core_info, async_example, get_world_data, update_world, create_vehicle, create_base, create_unit, create_floor, damage_unit, can_create_vehicle, sell_vehicle } from './pkg/example_wasm.js';
 
         let pixiApp = null;
         let animationFrame = null;
@@ -292,36 +319,39 @@
                         ctx.lineWidth = 1;
                         ctx.strokeRect(x, y, 20, 20);
                         // console.log(`Waste drawn at: ${x}, ${y}`);
-                    } else if (unit.EntityType === 'Unit') {
+                    } else if (unit.EntityType === 'Unit' || unit.EntityType === 'Floor') {
+                        let isDamaged = unit.Health && typeof unit.Health.current === 'number' && typeof unit.Health.max === 'number' && unit.Health.current < unit.Health.max;
+                        let strokeColor = isDamaged ? 'red' : 'black';
+                        let strokeWidth = isDamaged ? 3 : 1;
+
                         if (unit.BaseType === 'FLOOR_PARK') {
                             ctx.fillStyle = 'green';
                             ctx.fillRect(x, y, 20, 20);
-                            ctx.strokeStyle = 'black';
-                            ctx.lineWidth = 1;
+                            ctx.strokeStyle = strokeColor;
+                            ctx.lineWidth = strokeWidth;
                             ctx.strokeRect(x, y, 20, 20);
                             // console.log(`FLOOR_PARK drawn at: ${x}, ${y}`);
-                        }
-                        if (unit.BaseType === 'VEHICLE_CAR') {
+                        } else if (unit.BaseType === 'VEHICLE_CAR') {
                             ctx.beginPath();
                             ctx.arc(x, y, 15, 0, 2 * Math.PI);
                             ctx.fillStyle = 'blue';
                             ctx.fill();
-                            ctx.strokeStyle = 'black';
+                            ctx.strokeStyle = strokeColor;
+                            ctx.lineWidth = strokeWidth;
                             ctx.stroke();
                         // console.log(`Vehicle drawn at: ${x}, ${y}`);
-                        }
-                        else if (unit.BaseType === 'UNIT_TRASH') {
+                        } else if (unit.BaseType === 'UNIT_TRASH') {
                             ctx.fillStyle = 'red';
                             ctx.fillRect(x, y, 20, 20);
-                            ctx.strokeStyle = 'black';
-                            ctx.lineWidth = 1;
+                            ctx.strokeStyle = strokeColor;
+                            ctx.lineWidth = strokeWidth;
                             ctx.strokeRect(x, y, 20, 20);
                             // console.log(`UNIT_TRASH drawn at: ${x}, ${y}`);
                         } else if (unit.BaseType === 'UNIT_WASTE') {
                             ctx.fillStyle = 'orange';
                             ctx.fillRect(x, y, 20, 20);
-                            ctx.strokeStyle = 'black';
-                            ctx.lineWidth = 1;
+                            ctx.strokeStyle = strokeColor;
+                            ctx.lineWidth = strokeWidth;
                             ctx.strokeRect(x, y, 20, 20);
                             // console.log(`UNIT_WASTE drawn at: ${x}, ${y}`);
                         }
@@ -523,6 +553,49 @@
                 draw();
             } catch (error) {
                 log(`Error creating base: ${error}`);
+            }
+        };
+
+        window.createUnit = function() {
+            const unitType = document.getElementById('unitType').value;
+            const x = parseFloat(document.getElementById('unitX').value);
+            const y = parseFloat(document.getElementById('unitY').value);
+            const fraction = document.getElementById('unitFraction').value;
+            try {
+                const result = create_unit(unitType, x, y, fraction);
+                log(result);
+                // Redraw after creating
+                draw();
+            } catch (error) {
+                log(`Error creating unit: ${error}`);
+            }
+        };
+
+        window.createFloor = function() {
+            const floorType = document.getElementById('floorType').value;
+            const x = parseFloat(document.getElementById('floorX').value);
+            const y = parseFloat(document.getElementById('floorY').value);
+            const fraction = document.getElementById('floorFraction').value;
+            try {
+                const result = create_floor(floorType, x, y, fraction);
+                log(result);
+                // Redraw after creating
+                draw();
+            } catch (error) {
+                log(`Error creating floor: ${error}`);
+            }
+        };
+
+        window.damageUnit = function() {
+            const guid = document.getElementById('damageGuid').value;
+            const damage = parseFloat(document.getElementById('damageAmount').value);
+            try {
+                const result = damage_unit(guid, damage);
+                log(result);
+                // Redraw after damaging
+                draw();
+            } catch (error) {
+                log(`Error damaging unit: ${error}`);
             }
         };
 
