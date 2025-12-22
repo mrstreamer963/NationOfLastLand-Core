@@ -2,7 +2,7 @@ use hecs::World;
 
 use crate::{
     descriptions::Descriptions,
-    modules::{components::{AttachedItems, DamageType, Target, WeaponMode}, markers::IsTargetNear},
+    modules::{components::{AttachedItems, DamageType, Fraction, Target, WeaponMode}, markers::IsTargetNear},
     world_utils::{Attack, get_base_type, reset_target, spawn_attack_event}
 };
 
@@ -16,6 +16,20 @@ pub fn do_interaction(world: &mut World, descriptions: &Descriptions) {
         .iter()
     {
         if !world.contains(target.e) {
+            entities_to_reset.push(entity);
+            continue;
+        }
+
+        // Check if target is an enemy (different faction)
+        let should_attack = if let (Ok(attacker_fraction), Ok(target_fraction)) = (world.get::<&Fraction>(entity), world.get::<&Fraction>(target.e)) {
+            *attacker_fraction != *target_fraction
+        } else {
+            // If either doesn't have faction, assume they can attack (for alerts/units without faction)
+            true
+        };
+
+        if !should_attack {
+            // Reset target for non-enemy targets (like allied floors)
             entities_to_reset.push(entity);
             continue;
         }
