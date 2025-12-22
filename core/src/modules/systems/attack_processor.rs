@@ -19,25 +19,25 @@ pub fn attack_process(world: &mut World) {
             if let Some((health, resistance_opt)) = query.get() {
                 let mut damage = weapon_mode.damage;
 
-                println!("base damage {}", damage);
-
                 // Apply resistance if present
                 if let Some(resistance) = resistance_opt {
                     let resistance_value = resistance.resistances.get(&weapon_mode.damage_type).unwrap_or(&0.0);
                     damage *= 1.0 - *resistance_value;
                 }
 
-                println!("damage {}", damage);
-
-                // Deal damage
-                health.current -= damage;
-
-                // Ensure health doesn't go below zero
-                if health.current < 0.0 {
-                    health.current = 0.0;
+                // Deal damage or heal
+                if weapon_mode.damage_type == crate::modules::components::DamageType::RepairForce {
+                    health.current += damage; // Heal
+                } else {
+                    health.current -= damage; // Damage
                 }
 
-                println!("health {}", health.current);
+                // Ensure health doesn't go below zero and doesn't exceed max
+                if health.current < 0.0 {
+                    health.current = 0.0;
+                } else if health.current > health.max {
+                    health.current = health.max;
+                }
 
                 // Check if dead
                 if health.current == 0.0 {

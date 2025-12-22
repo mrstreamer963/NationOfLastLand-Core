@@ -75,4 +75,14 @@ fn main() {
     // Check if unit still has IsWaitingTarget
     let has_waiting_after = world.get::<&IsWaitingTarget>(unit_red).is_ok();
     println!("Unit has IsWaitingTarget after update: {}", has_waiting_after);
+
+    // Check health after interaction
+    if let Ok(health) = world.get::<&Health>(unit_red) {
+        println!("Unit health after interaction: current={}, max={}", health.current, health.max);
+        if health.current > 0.5 {
+            println!("SUCCESS: Unit was healed!");
+        } else {
+            println!("FAIL: Unit was not healed");
+        }
+    }
 }

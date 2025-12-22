@@ -1,6 +1,6 @@
 use crate::base_utils::add_inventory;
 use crate::descriptions::Descriptions;
-use crate::modules::components::{BaseType, EntityType, Fraction, Health, Inventory, Pos, Resistance, DamageType, UnitName};
+use crate::modules::components::{AttachedItems, BaseType, EntityType, Fraction, Health, Inventory, Pos, Resistance, DamageType, UnitName};
 use crate::modules::markers::{Unit, IsWaitingTarget};
 use crate::random_generator::RandomGenerator;
 use crate::spawner::create_item_from_description;
@@ -20,7 +20,8 @@ pub fn create_unit_base(world: &mut World, descriptions: &Descriptions, unit_key
         pos,
         EntityType::Unit,
         Unit{},
-        faction
+        faction,
+        AttachedItems::new()
     ));
 
     // Add health if max_health is specified

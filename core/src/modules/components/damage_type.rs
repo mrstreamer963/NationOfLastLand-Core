@@ -6,6 +6,7 @@ pub enum DamageType {
     Clean,
     Acid,
     Physical,
+    RepairForce,
 }
 
 impl DamageType {
@@ -14,6 +15,7 @@ impl DamageType {
             "DMG_CLEAN" => Some(DamageType::Clean),
             "DMG_ACID" => Some(DamageType::Acid),
             "Physical" => Some(DamageType::Physical),
+            "REPAIR_FORCE" => Some(DamageType::RepairForce),
             _ => None,
         }
     }

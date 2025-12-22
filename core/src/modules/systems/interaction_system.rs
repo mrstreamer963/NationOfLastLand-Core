@@ -29,8 +29,41 @@ pub fn do_interaction(world: &mut World, descriptions: &Descriptions) {
         };
 
         if !should_attack {
-            // Reset target for non-enemy targets (like allied floors)
-            entities_to_reset.push(entity);
+            // Check if target is an allied floor
+            let is_allied_floor = if let Ok(target_entity_type) = world.get::<&crate::modules::components::EntityType>(target.e) {
+                matches!(*target_entity_type, crate::modules::components::EntityType::Floor)
+            } else {
+                false
+            };
+
+            if is_allied_floor {
+                println!("Applying floor repair to unit");
+                // Apply floor's interactions to the unit (attacker)
+                if let Ok(floor_base_type) = get_base_type(world, target.e) {
+                    if let Some(floor_desc) = descriptions.units.get(&floor_base_type) {
+                        if let Some(interactions) = &floor_desc.interactions {
+                            for interaction in interactions {
+                                for (damage_type_str, damage) in interaction.1.effects.iter() {
+                                    if let Some(dt) = DamageType::from_str(damage_type_str) {
+                                        let w = WeaponMode {
+                                            damage_type: dt,
+                                            damage: *damage as f32,
+                                            range: interaction.1.range.unwrap_or(0.0),
+                                        };
+                                        println!("Creating repair event: {} {}", damage_type_str, damage);
+                                        // Create attack event where target is the unit (attacker)
+                                        attack_events.push(Attack {
+                                            weapon_mode: w, target_unit: entity });
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            } else {
+                // Reset target for other non-enemy targets
+                entities_to_reset.push(entity);
+            }
             continue;
         }
 

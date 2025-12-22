@@ -1,7 +1,7 @@
 use hecs::{Entity, World};
 use crate::descriptions::Descriptions;
 use crate::modules::components::{Inventory, AttachedItems, BaseType, Guid, Pos, Target, Fraction, Health};
-use crate::modules::markers::{Unit, Alert, IsMoving, IsWaitingTarget, Floor};
+use crate::modules::markers::{Unit, Alert, IsMoving, IsWaitingTarget, Floor, IsTargetNear};
 use crate::world_utils::attach_entity;
 use std::collections::HashSet;
 
@@ -159,6 +159,23 @@ fn set_target_to_waiting_units(world: &mut World, target_infos: &Vec<(hecs::Enti
         world.insert_one(entity, target).unwrap();
         world.insert_one(entity, IsMoving {}).unwrap();
         world.remove_one::<IsWaitingTarget>(entity).unwrap();
+    }
+
+    // For damaged units targeting floors, add IsTargetNear immediately since floors don't move
+    let entities_to_add_near: Vec<hecs::Entity> = world.query::<(&Target, &Unit, &IsMoving, &Health)>().iter()
+        .filter(|(_, (target, _, _, health))| {
+            health.current < health.max &&
+            if let Ok(target_entity_type) = world.get::<&crate::modules::components::EntityType>(target.e) {
+                matches!(*target_entity_type, crate::modules::components::EntityType::Floor)
+            } else {
+                false
+            }
+        })
+        .map(|(entity, _)| entity)
+        .collect();
+
+    for entity in entities_to_add_near {
+        world.insert_one(entity, IsTargetNear {}).unwrap();
     }
 }
 

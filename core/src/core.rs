@@ -159,6 +159,10 @@ impl Core {
 
         do_remove_dead(&mut self.world, &mut self.s, &self.descriptions);
 
+        // Run AI system to process waiting vehicles and assign targets
+        // ai_vehicle_system(&mut self.world);
+        ai_unit_system(&mut self.world, &self.descriptions);
+
         do_interaction(&mut self.world, &self.descriptions);
         attack_process(&mut self.world);
         attach_process(&mut self.world, &self.descriptions);
@@ -172,10 +176,6 @@ impl Core {
         if crate::random_generator::generate_probability() > self.r.waste_probability_threshold {
             self.create_waste()?;
         }
-
-        // Run AI system to process waiting vehicles and assign targets
-        // ai_vehicle_system(&mut self.world);
-        ai_unit_system(&mut self.world, &self.descriptions);
 
         set_speed_by_target(&mut self.world, &self.setup.spatial);
         do_move(&mut self.world, &self.setup.spatial);
